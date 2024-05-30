@@ -2,6 +2,8 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CodeAcademy.Controllers
 {
@@ -25,26 +27,62 @@ namespace CodeAcademy.Controllers
             return View();
         }
 
+        /* [HttpPost]
+         [ValidateAntiForgeryToken]
+         public IActionResult Login(LoginViewModel objUser)
+         {
+             if (ModelState.IsValid)
+             {
+                 var obj = _context.Users
+                     .FirstOrDefault(a => a.Username.Equals(objUser.Username) && a.Password.Equals(objUser.Password));
+
+                 if (obj != null)
+                 {
+                     _session.SetString("UserID", obj.UserId.ToString());
+                     _session.SetString("UserName", obj.Username);
+                     Console.WriteLine("redirect");
+                     return RedirectToAction("UserDashboard");
+                 }
+                 else
+                 {
+                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                 }
+             }
+             else
+             {
+                 foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                 {
+                     Console.WriteLine(error.ErrorMessage);
+                 }
+             }
+             return View(objUser);
+         }*/
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Login(LoginViewModel objUser)
         {
             if (ModelState.IsValid)
             {
-                var obj = _context.Users
-                    .FirstOrDefault(a => a.Username.Equals(objUser.Username) && a.Password.Equals(objUser.Password));
+                // Retrieve the user from the database based on the provided username
+                var user = _context.Users.SingleOrDefault(u => u.Username == objUser.Username);
 
-                if (obj != null)
+                if (user != null)
                 {
-                    _session.SetString("UserID", obj.UserId.ToString());
-                    _session.SetString("UserName", obj.Username);
-                    Console.WriteLine("redirect");
-                    return RedirectToAction("UserDashboard");
+                    // Validate the entered password with the stored hashed password and salt
+                    if (!string.IsNullOrEmpty(objUser.Password) && ValidatePassword(objUser.Password, user.Password, user.Salt))
+                    {
+                        // Passwords match, login successful
+                        _session.SetString("UserID", user.UserId.ToString());
+                        _session.SetString("UserName", user.Username);
+
+                        Console.WriteLine("redirect");
+                        return RedirectToAction("UserDashboard");
+                    }
                 }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                }
+
+                // Incorrect username or password, return to login view
+                ModelState.AddModelError(string.Empty, "Invalid username or password");
             }
             else
             {
@@ -90,7 +128,11 @@ namespace CodeAcademy.Controllers
             {
                 // Set other properties
                 user.UserId = GetNextId();
+                // Generate a random salt
+                user.Salt = Convert.ToBase64String(GenerateSalt());
 
+                // Hash the password using the generated salt
+                user.Password = HashPassword(user.Password, user.Salt);
                 // Add the user to the context
                 _context.Add(user);
 
@@ -98,6 +140,9 @@ namespace CodeAcademy.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+                    // Set session parameters
+                    _session.SetString("UserID", user.UserId.ToString());
+                    _session.SetString("UserName", user.Username);
                     return RedirectToAction(nameof(UserDashBoard));
                 }
                 catch (Exception ex)
@@ -125,6 +170,36 @@ namespace CodeAcademy.Controllers
             // Logic to get the next available ID, for example, querying the database or using a counter
             int nextId = _context.Users.Max(m => (int?)m.UserId) ?? 0;
             return nextId + 1;
+        }
+
+        private string HashPassword(string password, string salt)
+        {
+            byte[] saltBytes = Convert.FromBase64String(salt);
+
+            using (var sha256 = new SHA256Managed())
+            {
+                byte[] combinedBytes = Encoding.UTF8.GetBytes(password).Concat(saltBytes).ToArray();
+                byte[] hashedPasswordBytes = sha256.ComputeHash(combinedBytes);
+                return Convert.ToBase64String(hashedPasswordBytes);
+            }
+        }
+
+        // methods for hashing password before saving it into the db
+        private bool ValidatePassword(string enteredPassword, string storedHashedPassword, string salt)
+        {
+            string hashedEnteredPassword = HashPassword(enteredPassword, salt);
+            return string.Equals(hashedEnteredPassword, storedHashedPassword, StringComparison.Ordinal);
+        }
+
+
+        private byte[] GenerateSalt()
+        {
+            byte[] saltBytes = new byte[16];
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(saltBytes);
+            }
+            return saltBytes;
         }
     }
 
