@@ -31,7 +31,7 @@ public partial class User
     [Column("role")]
     [StringLength(50)]
     [Unicode(false)]
-    public string Role { get; set; } = null!;
+    public string Role { get; set; } = "none";
 
     [InverseProperty("User")]
     public virtual Administrator? Administrator { get; set; }

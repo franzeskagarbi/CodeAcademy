@@ -8,9 +8,13 @@ namespace CodeAcademy.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        //using session 
+        private readonly ISession _session;
+
+        public HomeController(ILogger<HomeController> logger, IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
+            _session = httpContextAccessor.HttpContext.Session;
         }
 
         public IActionResult Index()

@@ -1,0 +1,44 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model CodeAcademy.Models.LoginViewModel
+@{
+    ViewBag.Title = "Login";
+}
+
+
+@using (Html.BeginForm("Login", "User", FormMethod.Post))
+{
+    <fieldset>
+        <legend>Login</legend>
+
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        @if (ViewBag.Message != null)
+        {
+            <p style="border: 1px solid red">
+                @ViewBag.Message
+            </p>
+        }
+
+        <table>
+            <tr>
+                <td>@Html.LabelFor(a => a.Username)</td>
+                <td>@Html.TextBoxFor(a => a.Username)</td>
+                <td>@Html.ValidationMessageFor(a => a.Username)</td>
+            </tr>
+            <tr>
+                <td>@Html.LabelFor(a => a.Password)</td>
+                <td>@Html.PasswordFor(a => a.Password)</td>
+                <td>@Html.ValidationMessageFor(a => a.Password)</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="Login" /></td>
+                <td></td>
+            </tr>
+        </table>
+    </fieldset>
+}
+
