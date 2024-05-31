@@ -17,12 +17,12 @@ public partial class Student
     [Column("name")]
     [StringLength(50)]
     [Unicode(false)]
-    public string Name { get; set; } = null!;
+    public string Name { get; set; } = "tba";
 
     [Column("surname")]
     [StringLength(50)]
     [Unicode(false)]
-    public string Surname { get; set; } = null!;
+    public string Surname { get; set; } = "tba";
 
     [InverseProperty("Student")]
     public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();

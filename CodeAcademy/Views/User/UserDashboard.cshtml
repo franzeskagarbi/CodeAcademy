@@ -7,8 +7,6 @@
 
 <h2>User Dashboard</h2>
 
-<p>Welcome, @Context.Session.GetString("Username")</p>
-
 @if (ViewBag.UserName != null)
 {
     <p>Welcome, @ViewBag.UserName!</p>
@@ -17,3 +15,6 @@ else
 {
     <p>Welcome, user!</p>
 }
+<ul class="list-group">
+<li class="list-group-item"><a class="text-decoration-none text-info" asp-controller="Administrators" asp-action="AssignRole">Assign Roles to Users</a></li>
+</ul>

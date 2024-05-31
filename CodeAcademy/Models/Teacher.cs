@@ -17,12 +17,12 @@ public partial class Teacher
     [Column("name")]
     [StringLength(50)]
     [Unicode(false)]
-    public string Name { get; set; } = null!;
+    public string Name { get; set; } = "tba";
 
     [Column("surname")]
     [StringLength(50)]
     [Unicode(false)]
-    public string Surname { get; set; } = null!;
+    public string Surname { get; set; } = "tba";
 
     [Column("phone_number")]
     public int PhoneNumber { get; set; }

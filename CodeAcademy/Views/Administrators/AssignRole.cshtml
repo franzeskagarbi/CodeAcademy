@@ -1,0 +1,85 @@
+﻿@model List<CodeAcademy.Models.User>
+
+@{
+    ViewData["Title"] = "Assign Roles";
+}
+
+<h2>Assign Roles</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Current Role</th>
+            <th>New Role</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.Email</td>
+                <td id="roleTd_@user.Username">@user.Role</td>
+                <td>
+                    <select id="user_NewRole_@user.Username" name="user.NewRole">
+                        <option value="Admin">Admin</option>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" onclick="assignRole('@user.Username')">Assign Role</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function assignRole(username) {
+        var newRole = $('#user_NewRole_' + username).val();
+        $.ajax({
+            url: '/Administrators/AssignRole',
+            method: 'POST',
+            data: {
+                username: username,
+                newRole: newRole
+            },
+            success: function (data) {
+                $('#roleTd_' + username).text(newRole);
+                showSuccessMessage("Role assigned successfully");
+                $('#assignButton_' + username).prop('disabled', true);
+
+            },
+            error: function (error) {
+                console.error('Error assigning roles:', error);
+            }
+        });
+    }
+
+    function showSuccessMessage(message) {
+        var successDiv = $('<div>').addClass('alert alert-success').text(message);
+        $('body').prepend(successDiv);
+        setTimeout(function () {
+            successDiv.remove();
+        }, 5000);
+    }
+</script>
