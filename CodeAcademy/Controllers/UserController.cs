@@ -69,9 +69,35 @@ namespace CodeAcademy.Controllers
 
                 if (user != null)
                 {
+                    string name = null;
+                    string surname = null;
                     // Validate the entered password with the stored hashed password and salt
                     if (!string.IsNullOrEmpty(objUser.Password) && ValidatePassword(objUser.Password, user.Password, user.Salt))
                     {
+                        switch (user.Role?.ToLower()?.Trim())
+                        {
+                            case "admin":
+                                var admin = _context.Administrators.FirstOrDefault(a => a.UserId == user.UserId);
+                                name = admin?.Name;
+                                surname = admin?.Surname;
+                                break;
+                            case "student":
+                                var student = _context.Students.FirstOrDefault(s => s.UserId == user.UserId);
+                                name = student?.Name;
+                                surname = student?.Surname;
+                                break;
+                            case "teacher":
+                                var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == user.UserId);
+                                name = teacher?.Name;
+                                surname = teacher?.Surname;
+                                break;
+                        }
+
+                        if (name == "tba" || surname == "tba")
+                        {
+                            // Redirect to the edit form to complete the profile
+                            return RedirectToAction("EditProfile", new { userId = user.UserId });
+                        }
                         // Passwords match, login successful
                         _session.SetString("UserID", user.UserId.ToString());
                         _session.SetString("UserName", user.Username);
@@ -201,7 +227,128 @@ namespace CodeAcademy.Controllers
             }
             return saltBytes;
         }
+
+        public IActionResult EditProfile(int userId)
+        {
+            var user = _context.Users.Find(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            EditProfileViewModel model = null;
+
+            switch (user.Role?.ToLower()?.Trim())
+            {
+                case "admin":
+                    var admin = _context.Administrators.FirstOrDefault(a => a.UserId == userId);
+                    if (admin != null)
+                    {
+                        model = new EditProfileViewModel
+                        {
+                            UserId = user.UserId,
+                            Name = admin.Name,
+                            Surname = admin.Surname,
+                            Role = "admin"
+                        };
+                    }
+                    break;
+                case "student":
+                    var student = _context.Students.FirstOrDefault(s => s.UserId == userId);
+                    if (student != null)
+                    {
+                        model = new EditProfileViewModel
+                        {
+                            UserId = user.UserId,
+                            Name = student.Name,
+                            Surname = student.Surname,
+                            Role = "student"
+                        };
+                    }
+                    break;
+                case "teacher":
+                    var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == userId);
+                    if (teacher != null)
+                    {
+                        model = new EditProfileViewModel
+                        {
+                            UserId = user.UserId,
+                            Name = teacher.Name,
+                            Surname = teacher.Surname,
+                            Role = "teacher"
+                        };
+                    }
+                    break;
+            }
+
+            
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditProfile(EditProfileViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                switch (model.Role?.ToLower()?.Trim())
+                {
+                    case "admin":
+                        var admin = _context.Administrators.FirstOrDefault(a => a.UserId == model.UserId);
+                        if (admin != null)
+                        {
+                            admin.Name = model.Name;
+                            admin.Surname = model.Surname;
+                        }
+                        break;
+                    case "student":
+                        var student = _context.Students.FirstOrDefault(s => s.UserId == model.UserId);
+                        if (student != null)
+                        {
+                            student.Name = model.Name;
+                            student.Surname = model.Surname;
+                        }
+                        break;
+                    case "teacher":
+                        var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == model.UserId);
+                        if (teacher != null)
+                        {
+                            teacher.Name = model.Name;
+                            teacher.Surname = model.Surname;
+                        }
+                        break;
+                }
+
+                _context.SaveChanges();
+                //log in after editing/adding for the 1st time personal info
+                var user = _context.Users.FirstOrDefault(u => u.UserId == model.UserId);
+                if (user != null)
+                {
+                    HttpContext.Session.SetString("UserID", user.UserId.ToString());
+                    HttpContext.Session.SetString("UserName", user.Username);
+                }
+
+                return RedirectToAction("UserDashboard");
+            }
+
+            return View(model);
+        }
+
+        public IActionResult Logout()
+        {
+            //session variables clear
+            HttpContext.Session.Clear();
+
+            return RedirectToAction("Index", "Home"); 
+        }
+
+
     }
 
-    
+
 }
