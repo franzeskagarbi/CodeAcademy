@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
+using X.PagedList;
 
 namespace CodeAcademy.Controllers
 {
@@ -14,15 +15,40 @@ namespace CodeAcademy.Controllers
     {
         private readonly AcademyContext _context;
         private readonly ISession _session;
-        public IActionResult Index()
+        /*public IActionResult Index()
         {
             return View();
-        }
+        } */
 
         public UserController(AcademyContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _session = httpContextAccessor.HttpContext.Session;
+        }
+
+        // GET: Users
+        public async Task<IActionResult> Index(int? page, string? search)
+        {
+            ViewData["CurrentFilter"] = search;
+            var users = from u in _context.Users
+                        select u;
+            if (!String.IsNullOrEmpty(search))
+            {
+                users = users.Where(u => u.Username.Contains(search));
+            }
+
+            //users = users.OrderBy(c => c.Username);
+
+            //users = await _context.Users.ToListAsync();
+            // Pagination for users
+            if (page != null && page < 1)
+            {
+                page = 1;
+            }
+
+            int PageSize = 10;
+            var usersData = await users.ToPagedListAsync(page ?? 1, PageSize);
+            return View(usersData);
         }
 
         public IActionResult Login()

@@ -39,7 +39,14 @@
                         <li class="nav-item">
                             <a class="nav-link btn btn-primary text-white" asp-area="" asp-controller="User" asp-action="Create">Sign Up</a>
                         </li>
+                        <li class="nav-item">
+                            <form asp-action="Index" method="get">
+                                <input class="form-control" type="text" placeholder="Search" name="search" value="@ViewData["CurrentFilter"]" aria-label="Search">
+                            </form>
+                        </li>
+
                     </ul>
+                    
                 </div>
             </div>
         </nav>
