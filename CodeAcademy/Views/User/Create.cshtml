@@ -26,7 +26,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Password" class="control-label"></label>
-                <input asp-for="Password" class="form-control" />
+                <input asp-for="Password" class="form-control" type="password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <br />
@@ -35,7 +35,7 @@
             </div>
                 <br />
                 <div class="text-center">
-                    Already a member? <a asp-action="UserDashboard">Log in here.</a>
+                    Already a member? <a asp-action="Login">Log in here.</a>
                 </div>
         </form>
         </div>

@@ -94,6 +94,9 @@ namespace CodeAcademy.Controllers
                                 name = teacher?.Name;
                                 surname = teacher?.Surname;
                                 break;
+                            case "none":
+                                TempData["RoleError"] = "Your account does not have an assigned role. Please contact the administrators of the platform.";
+                                return RedirectToAction("Login");
                         }
 
                         if (name == "tba" || surname == "tba")
@@ -153,10 +156,18 @@ namespace CodeAcademy.Controllers
             }
         } */
 
-        public IActionResult UserDashBoard()
+        public IActionResult UserDashboard()
         {
             if (User.Identity.IsAuthenticated)
             {
+                var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (role == "none")
+                {
+                    TempData["RoleError"] = "Your account does not have an assigned role. Please contact the administrators of the platform.";
+                    return RedirectToAction("Login");
+                }
+
                 ViewBag.UserName = User.Identity.Name;
                 return View();
             }
@@ -192,10 +203,16 @@ namespace CodeAcademy.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+
+                    if (user.Role == "none")
+                    {
+                        TempData["RoleError"] = "Your account has been created, but no role has been assigned yet. Please contact the administrators of the platform.";
+                        return RedirectToAction("Login");
+                    }
                     // Set session parameters
                     _session.SetString("UserID", user.UserId.ToString());
                     _session.SetString("UserName", user.Username);
-                    return RedirectToAction(nameof(UserDashBoard));
+                    return RedirectToAction(nameof(UserDashboard));
                 }
                 catch (Exception ex)
                 {

@@ -12,6 +12,13 @@
     <fieldset>
         <legend>Login</legend>
 
+        @if (TempData["RoleError"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["RoleError"]
+            </div>
+        }
+
         @Html.AntiForgeryToken()
         @Html.ValidationSummary(true)
 

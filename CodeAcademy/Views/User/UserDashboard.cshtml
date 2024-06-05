@@ -15,17 +15,26 @@ else
 {
     <p>Welcome, user!</p>
 }
-<ul class="list-group">
-   @if (User.IsInRole("Admin"))
-    {
-        <li class="list-group-item">
-            <a class="text-decoration-none text-info" asp-controller="Administrators" asp-action="AssignRole">Assign Roles to Users</a>
-        </li>
-    }
-    else if (User.IsInRole("Student") || User.IsInRole("Teacher"))
-    {
-        <li class="list-group-item">
-            <a class="text-decoration-none text-info" asp-controller="Courses" asp-action="Index">Courses</a>
-        </li>
-    }
-</ul>
+@if (User.IsInRole("Admin") || User.IsInRole("Student") || User.IsInRole("Teacher"))
+{
+    <ul class="list-group">
+        @if (User.IsInRole("Admin"))
+        {
+            <li class="list-group-item">
+                <a class="text-decoration-none text-info" asp-controller="Administrators" asp-action="AssignRole">Assign Roles to Users</a>
+            </li>
+        }
+        @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+        {
+            <li class="list-group-item">
+                <a class="text-decoration-none text-info" asp-controller="Courses" asp-action="Index">Courses</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="alert alert-warning">
+        Your account does not have an assigned role. Please contact the administrators of the platform.
+    </div>
+}
