@@ -1,0 +1,36 @@
+﻿@model IEnumerable<CodeAcademy.Models.Course>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Create New</a>
+</p>
+
+<div class="container">
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <img class="card-img-top" src="URL_TO_IMAGE" alt="Course Image">
+                    <div class="card-body">
+                        <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
+                        <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
+                        <p class="card-text"><small class="text-muted">Teacher: @Html.DisplayFor(modelItem => item.Teacher.UserId)</small></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.CourseId">Edit</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@item.CourseId">Details</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Delete" asp-route-id="@item.CourseId">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
