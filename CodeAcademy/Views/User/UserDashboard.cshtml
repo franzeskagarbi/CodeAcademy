@@ -16,7 +16,16 @@ else
     <p>Welcome, user!</p>
 }
 <ul class="list-group">
-<li class="list-group-item"><a class="text-decoration-none text-info" asp-controller="Administrators" asp-action="AssignRole">Assign Roles to Users</a></li>
-    <li class="list-group-item"><a class="text-decoration-none text-info" asp-controller="Courses" asp-action="Index">Courses</a></li>
-
+   @if (User.IsInRole("Admin"))
+    {
+        <li class="list-group-item">
+            <a class="text-decoration-none text-info" asp-controller="Administrators" asp-action="AssignRole">Assign Roles to Users</a>
+        </li>
+    }
+    else if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+    {
+        <li class="list-group-item">
+            <a class="text-decoration-none text-info" asp-controller="Courses" asp-action="Index">Courses</a>
+        </li>
+    }
 </ul>

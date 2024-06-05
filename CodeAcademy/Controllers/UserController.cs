@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace CodeAcademy.Controllers
 {
@@ -99,8 +102,21 @@ namespace CodeAcademy.Controllers
                             return RedirectToAction("EditProfile", new { userId = user.UserId });
                         }
                         // Passwords match, login successful
-                        _session.SetString("UserID", user.UserId.ToString());
-                        _session.SetString("UserName", user.Username);
+                        //_session.SetString("UserID", user.UserId.ToString());
+                        //_session.SetString("UserName", user.Username);
+
+                        var claims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.Name, user.Username),
+                            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                            new Claim(ClaimTypes.Role, user.Role)
+                        };
+
+                        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                        
+
+                        HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity)).Wait();
+
 
                         Console.WriteLine("redirect");
                         return RedirectToAction("UserDashboard");
@@ -120,7 +136,7 @@ namespace CodeAcademy.Controllers
             return View(objUser);
         }
 
-        public IActionResult UserDashBoard()
+        /*public IActionResult UserDashBoard()
         {
             var userId = HttpContext.Session.GetString("UserID");
             var userName = HttpContext.Session.GetString("UserName");
@@ -135,6 +151,16 @@ namespace CodeAcademy.Controllers
                 Console.WriteLine("User is not authenticated. Redirecting to login.");
                 return RedirectToAction("Login");
             }
+        } */
+
+        public IActionResult UserDashBoard()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                ViewBag.UserName = User.Identity.Name;
+                return View();
+            }
+            return RedirectToAction("Login");
         }
 
         // GET: User/Create
