@@ -416,6 +416,85 @@ namespace CodeAcademy.Controllers
             return RedirectToAction("Index", "Home"); 
         }
 
+        // GET: Users/Delete/5
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (id == null || _context.Users == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(m => m.Username == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string username)
+        {
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // role of the user => delete records based on the role
+            if (user.Role == "Student")
+            {
+                //if user is student, delete record from student table
+                var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.UserId);
+                if (student != null)
+                {
+                    // Find all course enrollments of the student
+                    var courseEnrollments = await _context.CourseHasStudents.Where(cs => cs.StudentId == student.UserId).ToListAsync();
+
+                    // Remove the student from each course
+                    foreach (var enrollment in courseEnrollments)
+                    {
+                        _context.CourseHasStudents.Remove(enrollment);
+                    }
+                    _context.Students.Remove(student);
+                }
+            }
+            else if (user.Role == "Teacher")
+            {
+                //if user is teacher, delete record from teacher table
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.UserId);
+                if (teacher != null)
+                {
+                    // Update the association with courses to null
+                    foreach (var course in teacher.Courses)
+                    {
+                        course.TeacherId = 0; //to be modified later on 
+                    }
+                    _context.Teachers.Remove(teacher);
+                }
+            }
+            else if (user.Role == "Admin")
+            {
+                //if user is admin, delete record from administrator table
+                var admin = await _context.Administrators.FirstOrDefaultAsync(a => a.UserId == user.UserId);
+                if (admin != null)
+                {
+                    _context.Administrators.Remove(admin);
+                }
+            }
+
+            // Delete user 
+            _context.Users.Remove(user);
+
+            // Handle related records (if necessary)
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
 
     }
 
