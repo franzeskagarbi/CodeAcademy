@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CodeAcademy.Models;
+using System.Security.Claims;
 
 namespace CodeAcademy.Controllers
 {
@@ -47,26 +48,61 @@ namespace CodeAcademy.Controllers
         // GET: Courses/Create
         public IActionResult Create()
         {
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "UserId", "UserId");
-            return View();
+            CreateCourseModel courseModel = new CreateCourseModel();
+            ViewData["TeacherId"] = new SelectList(_context.Teachers, "UserId", "Name");
+            return View(courseModel);
         }
 
         // POST: Courses/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CourseId,Title,TeacherId,Description")] Course course)
+        public async Task<IActionResult> Create(CreateCourseModel createCourse)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(course);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (ModelState.IsValid)
+                {
+                    // Handle selected teacher
+                    int selectedTeacherId = createCourse.TeacherId;
+                    var selectedTeacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == selectedTeacherId);
+
+                    // Create Course entity
+                    var courseEntity = new Course
+                    {
+                        Title = createCourse.Title,
+                        Description = createCourse.Description,
+                        TeacherId = selectedTeacherId // Assign selected teacher
+                    };
+
+                    _context.Courses.Add(courseEntity);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Handle ModelState errors
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        Console.WriteLine(error.ErrorMessage);
+                    }
+                }
+
+                // Reload dropdown list for TeacherId
+                ViewData["TeacherId"] = new SelectList(_context.Teachers, "UserId", "Name", createCourse.TeacherId);
+
+                return View(createCourse);
             }
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "UserId", "UserId", course.TeacherId);
-            return View(course);
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine("Exception: " + ex.Message);
+                // Handle other exceptions if needed
+                return View(createCourse);
+            }
         }
+
+
+
 
         // GET: Courses/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -159,5 +195,82 @@ namespace CodeAcademy.Controllers
         {
             return _context.Courses.Any(e => e.CourseId == id);
         }
+
+        // GET: Courses/Enroll/id
+        [HttpGet]
+        public async Task<IActionResult> Enroll(int id)
+        {
+            // Fetch the course details from the database
+            var course = await _context.Courses.FindAsync(id);
+
+            // Check if the course exists
+            if (course == null)
+            {
+                // If the course does not exist, return a not found error
+                return NotFound();
+            }
+
+            // Pass the course model to the view
+            return View(course);
+        }
+
+        // POST: Courses/Enroll/id
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EnrollPost(int id)
+        {
+            // Fetch the course details from the database
+            var course = await _context.Courses.FindAsync(id);
+
+            // Check if the course exists
+            if (course == null)
+            {
+                // If the course does not exist, return a not found error
+                return NotFound();
+            }
+
+            //current logged-in user's userId
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            //if user is student
+            if (!string.IsNullOrEmpty(userId) && User.IsInRole("Student"))
+            {
+                try
+                {
+                    var courseHasStudent = new CourseHasStudent
+                    {
+                        CourseId = id,
+                        StudentId = Int32.Parse(userId),
+                        Id = GetNextCourseId()
+                    };
+                    _context.CourseHasStudents.Add(courseHasStudent);
+                    await _context.SaveChangesAsync();
+
+                    TempData["EnrollmentMessage"] = "You have successfully enrolled in the course.";
+
+                    return RedirectToAction("Index", "Home"); // Redirect to a different page after enrollment success
+                }
+                catch (Exception ex)
+                {
+                    // Handle exceptions
+                    Console.WriteLine($"Error enrolling student: {ex.Message}");
+                    TempData["ErrorMessage"] = "An error occurred while enrolling in the course. Please try again later.";
+                    return View(course); // Return to the enrollment page with an error message
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "You are not authorized to enroll in courses.";
+                return RedirectToAction("Index", "Home"); // Redirect to a different page for unauthorized access
+            }
+        }
+
+        // Helper method to get the next available course ID
+        private int GetNextCourseId()
+        {
+            int nextId = _context.CourseHasStudents.Max(p => (int?)p.Id) ?? 0;
+            return nextId + 1;
+        }
+               
     }
 }

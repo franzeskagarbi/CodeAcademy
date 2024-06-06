@@ -416,6 +416,43 @@ namespace CodeAcademy.Controllers
             return RedirectToAction("Index", "Home"); 
         }
 
+        // GET: Users/Details/5
+        public async Task<IActionResult> Details(string id)
+        {
+            if (id == null || _context.Users == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(m => m.Username == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (user.Role == "Teacher")
+            {
+                //teacher information from teacher table
+                var teacherInfo = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.UserId);
+                ViewBag.TeacherInfo = teacherInfo;
+            }
+            else if (user.Role == "Student")
+            {
+                //student information from student table
+                var studentInfo = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.UserId);
+                ViewBag.StudentInfo = studentInfo;
+            }
+            else if (user.Role == "Admin")
+            {
+                //admin information from administrator table
+                var adminInfo = await _context.Administrators.FirstOrDefaultAsync(a => a.UserId == user.UserId);
+                ViewBag.AdministratorInfo = adminInfo;
+            }
+
+            return View(user);
+        }
+
         // GET: Users/Delete/5
         public async Task<IActionResult> Delete(string id)
         {

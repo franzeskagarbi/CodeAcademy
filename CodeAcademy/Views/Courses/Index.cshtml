@@ -3,14 +3,34 @@
 @{
     ViewData["Title"] = "Courses";
 }
+@if (!string.IsNullOrEmpty(ViewData["EnrollmentMessage"] as string))
+{
+    <div class="alert alert-success" role="alert">
+        @ViewData["EnrollmentMessage"]
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(ViewData["ErrorMessage"] as string))
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewData["ErrorMessage"]
+    </div>
+}
+
 
 <h1>Courses</h1>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Create New</a>
-</p>
+
 
 <div class="container">
+    <div class="row">
+        @if (User.IsInRole("Teacher"))
+        {
+            <p>
+                <a class="btn btn-primary" asp-action="Create">Create New</a>
+            </p>
+        }
+    </div>
     <div class="row">
         @foreach (var item in Model)
         {
@@ -21,12 +41,16 @@
                         <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
                         <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
                         <p class="card-text"><small class="text-muted">Teacher: @Html.DisplayFor(modelItem => item.Teacher.UserId)</small></p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group">
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.CourseId">Edit</a>
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@item.CourseId">Details</a>
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="Delete" asp-route-id="@item.CourseId">Delete</a>
-                            </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        @if (User.IsInRole("Student"))
+                        {
+                            <a class="btn btn-primary btn-sm" asp-action="Enroll" asp-route-id="@item.CourseId">Enroll to the course</a>
+                        }
+                        <div class="btn-group">
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.CourseId">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@item.CourseId">Details</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Delete" asp-route-id="@item.CourseId">Delete</a>
                         </div>
                     </div>
                 </div>

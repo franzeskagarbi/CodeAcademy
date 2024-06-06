@@ -1,0 +1,94 @@
+﻿@model CodeAcademy.Models.User
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>User</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        @if (Model.Role == "Teacher")
+        {
+            // Retrieve teacher information
+            var teacherInfo = ViewBag.TeacherInfo as CodeAcademy.Models.Teacher;
+            <dt class="col-sm-2">
+                Name
+            </dt>
+            <dd class="col-sm-10">
+                @teacherInfo?.Name
+            </dd>
+            <dt class="col-sm-2">
+                Surname
+            </dt>
+            <dd class="col-sm-10">
+                @teacherInfo?.Surname
+            </dd>
+            <dt class="col-sm-2">
+                Phone Number
+            </dt>
+            <dd class="col-sm-10">
+                @teacherInfo?.PhoneNumber
+            </dd>
+        }
+        else if (Model.Role == "Student")
+        {
+            // Retrieve student information
+            var studentInfo = ViewBag.StudentInfo as CodeAcademy.Models.Student;
+            <dt class="col-sm-2">
+                Name
+            </dt>
+            <dd class="col-sm-10">
+                @studentInfo?.Name
+            </dd>
+            <dt class="col-sm-2">
+                Surname
+            </dt>
+            <dd class="col-sm-10">
+                @studentInfo?.Surname
+            </dd>
+        }
+        else if (Model.Role == "Admin")
+        {
+            // Retrieve student information
+            var studentInfo = ViewBag.AdministratorInfo as CodeAcademy.Models.Administrator;
+            <dt class="col-sm-2">
+                Name
+            </dt>
+            <dd class="col-sm-10">
+                @studentInfo?.Name
+            </dd>
+            <dt class="col-sm-2">
+                Surname
+            </dt>
+            <dd class="col-sm-10">
+                @studentInfo?.Surname
+            </dd>
+        }
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Password)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Password)
+        </dd>    
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Role)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Role)
+        </dd>
+        
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Username">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
