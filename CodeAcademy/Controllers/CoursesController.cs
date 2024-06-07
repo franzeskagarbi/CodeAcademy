@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CodeAcademy.Models;
 using System.Security.Claims;
+using CodeAcademy.ViewModels;
 
 namespace CodeAcademy.Controllers
 {
