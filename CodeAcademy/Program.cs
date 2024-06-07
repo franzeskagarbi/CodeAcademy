@@ -47,7 +47,10 @@ app.UseAuthorization();
 app.UseAuthentication();
 
 //session call after routing
+
 app.UseSession();
+app.UseMiddleware<ClearSession>();
+
 
 app.MapControllerRoute(
     name: "default",

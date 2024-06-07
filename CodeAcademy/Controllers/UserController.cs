@@ -408,8 +408,10 @@ namespace CodeAcademy.Controllers
             return View(model);
         }
 
-        public IActionResult Logout()
+        public async Task<IActionResult> LogoutAsync()
         {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
             //session variables clear
             HttpContext.Session.Clear();
 

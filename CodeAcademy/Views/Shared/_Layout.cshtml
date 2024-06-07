@@ -36,15 +36,22 @@
                     </ul>
                 </div>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end" style="margin-right: 150px;">
-                    <ul class="navbar-nav">                       
-                        <!-- not logged in, display the login button -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login" style="font-weight: bold;">Log In</a>
-                        </li>                        
-                        <!-- logged in, display the logout button -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Logout" style="font-weight: bold;">Log Out</a>
-                        </li>                      
+                    <ul class="navbar-nav">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link text-dark" style="font-weight: bold;">@User.Identity.Name</span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Logout" style="font-weight: bold;">Log Out</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login" style="font-weight: bold;">Log In</a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link btn btn-primary text-white" asp-area="" asp-controller="User" asp-action="Create">Sign Up</a>
                         </li>
@@ -53,9 +60,7 @@
                                 <input class="form-control" type="text" placeholder="Search" name="search" value="@ViewData["CurrentFilter"]" aria-label="Search">
                             </form>
                         </li>
-
                     </ul>
-                    
                 </div>
             </div>
         </nav>
