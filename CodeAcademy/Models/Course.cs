@@ -26,6 +26,9 @@ public partial class Course
     [Unicode(false)]
     public string Description { get; set; } = null!;
 
+    public string? ImageUrl { get; set; }
+
+
     [InverseProperty("Course")]
     public virtual ICollection<CourseSection> CourseSections { get; set; } = new List<CourseSection>();
 

@@ -13,9 +13,9 @@ namespace CodeAcademy.Models
         public string Description { get; set; }
 
         [Required]
-        public int TeacherId { get; set; } // Assuming TeacherId is an integer representing the teacher's ID
+        public int TeacherId { get; set; }
 
-        // If you need additional properties for validation or data binding, add them here
+        public IFormFile Image { get; set; } // file upload
     }
 
 }

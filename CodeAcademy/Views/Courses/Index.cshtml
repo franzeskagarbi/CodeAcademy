@@ -4,7 +4,15 @@
     ViewData["Title"] = "Courses";
 }
 
-<!-- Include the modal markup from the Enroll view -->
+<style>
+    .card-img-top {
+        width: 100%; /* Set width to 100% */
+        height: 200px; /* Set a fixed height for all images */
+        object-fit: cover; /* Ensure the image covers the entire space */
+    }
+</style>
+
+<!-- modal window for verification before ennrollment -->
 <div class="modal fade" id="enrollModal" tabindex="-1" role="dialog" aria-labelledby="enrollModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -15,7 +23,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Enrollment form -->
+                <!-- enrollment form -->
                 <form asp-action="EnrollPost" asp-controller="Courses" method="post">
                     <input type="hidden" id="courseId" name="courseId" />
                     <button type="submit" class="btn btn-primary">Enroll</button>
@@ -25,6 +33,12 @@
     </div>
 </div>
 <h1>Courses</h1>
+@if (User.IsInRole("Teacher"))
+{
+    <div class="mb-4">
+        <a class="btn btn-success" asp-action="Create">Create New Course</a>
+    </div>
+}
 
 <div class="container">
     <div class="row">
@@ -32,7 +46,7 @@
         {
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm">
-                    <img class="card-img-top" src="images/python.png" alt="Course Image">
+                    <img class="card-img-top" src="@item.ImageUrl" alt="Course Image">
                     <div class="card-body">
                         <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
                         <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
@@ -58,11 +72,11 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Handle click event on enroll button
+            // click event on enroll button
             $('.enroll-btn').click(function () {
-                // Get the course ID from data attribute
+                // get courseId from data attribute
                 var courseId = $(this).data('course-id');
-                // Set the course ID in the hidden input field
+                // set the courseId in the hidden input field
                 $('#courseId').val(courseId);
             });
         });

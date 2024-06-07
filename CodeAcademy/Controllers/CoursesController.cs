@@ -62,45 +62,105 @@ namespace CodeAcademy.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    // Handle selected teacher
+                    string imageUrl = null;
+
+                    if (createCourse.Image != null && createCourse.Image.Length > 0)
+                    {
+                        // Save the file to wwwroot/images
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", createCourse.Image.FileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await createCourse.Image.CopyToAsync(stream);
+                        }
+                        imageUrl = "/images/" + createCourse.Image.FileName;
+                    }
+
+                    // Retrieve the selected teacher
                     int selectedTeacherId = createCourse.TeacherId;
                     var selectedTeacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == selectedTeacherId);
 
-                    // Create Course entity
+                    if (selectedTeacher == null)
+                    {
+                        ModelState.AddModelError("TeacherId", "Selected teacher does not exist.");
+                        ViewBag.TeacherId = new SelectList(_context.Teachers, "UserId", "Name", createCourse.TeacherId);
+                        return View(createCourse);
+                    }
+
+                    // Create a new Course entity
                     var courseEntity = new Course
                     {
+                        CourseId = createCourse.Id,
                         Title = createCourse.Title,
                         Description = createCourse.Description,
-                        TeacherId = selectedTeacherId // Assign selected teacher
+                        TeacherId = selectedTeacherId,
+                        ImageUrl = imageUrl
                     };
 
                     _context.Courses.Add(courseEntity);
+
+                    // Log the state of the entity
+                    var addedEntity = _context.Entry(courseEntity).State;
+                    Console.WriteLine("Entity State after adding: " + addedEntity); // Should be 'Added'
+
+                    // Save changes to the database
                     await _context.SaveChangesAsync();
+                    Console.WriteLine("SaveChangesAsync was called successfully.");
+
+                    // Ensure the entity was saved
+                    var savedEntity = await _context.Courses.FirstOrDefaultAsync(c => c.Title == createCourse.Title && c.TeacherId == selectedTeacherId);
+                    if (savedEntity == null)
+                    {
+                        Console.WriteLine("Error: The course entity was not saved.");
+                        ModelState.AddModelError("", "The course entity was not saved to the database.");
+                        ViewBag.TeacherId = new SelectList(_context.Teachers, "UserId", "Name", createCourse.TeacherId);
+                        return View(createCourse);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Success: The course entity was saved.");
+                    }
+
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Handle ModelState errors
+                // Log ModelState errors
                 foreach (var modelState in ModelState.Values)
                 {
                     foreach (var error in modelState.Errors)
                     {
-                        Console.WriteLine(error.ErrorMessage);
+                        Console.WriteLine("ModelState Error: " + error.ErrorMessage);
                     }
                 }
 
-                // Reload dropdown list for TeacherId
-                ViewData["TeacherId"] = new SelectList(_context.Teachers, "UserId", "Name", createCourse.TeacherId);
-
+                // Reload dropdown list for TeacherId in case of validation failure
+                ViewBag.TeacherId = new SelectList(_context.Teachers, "UserId", "Name", createCourse.TeacherId);
                 return View(createCourse);
             }
             catch (DbUpdateException ex)
             {
-                Console.WriteLine("Exception: " + ex.Message);
+                Console.WriteLine("DbUpdateException: " + ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("Inner Exception: " + ex.InnerException.Message);
+                    Console.WriteLine("Inner Exception Stack Trace: " + ex.InnerException.StackTrace);
+                }
                 // Handle other exceptions if needed
+                ViewBag.TeacherId = new SelectList(_context.Teachers, "UserId", "Name", createCourse.TeacherId);
+                return View(createCourse);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.Message);
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine("Inner Exception: " + ex.InnerException.Message);
+                    Console.WriteLine("Inner Exception Stack Trace: " + ex.InnerException.StackTrace);
+                }
+                // Handle other exceptions if needed
+                ViewBag.TeacherId = new SelectList(_context.Teachers, "UserId", "Name", createCourse.TeacherId);
                 return View(createCourse);
             }
         }
-
 
 
 
