@@ -344,6 +344,7 @@ namespace CodeAcademy.Controllers
                             UserId = user.UserId,
                             Name = teacher.Name,
                             Surname = teacher.Surname,
+                            Telephone = teacher.PhoneNumber.ToString(),
                             Role = "teacher"
                         };
                     }
@@ -385,11 +386,16 @@ namespace CodeAcademy.Controllers
                         break;
                     case "teacher":
                         var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == model.UserId);
-                        if (teacher != null)
+                        if (int.TryParse(model.Telephone, out int phoneNumber))
                         {
-                            teacher.Name = model.Name;
-                            teacher.Surname = model.Surname;
+                            if (teacher != null)
+                            {
+                                teacher.Name = model.Name;
+                                teacher.Surname = model.Surname;
+                                teacher.PhoneNumber = phoneNumber;
+                            }
                         }
+                            
                         break;
                 }
 
