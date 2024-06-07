@@ -3,40 +3,36 @@
 @{
     ViewData["Title"] = "Courses";
 }
-@if (!string.IsNullOrEmpty(ViewData["EnrollmentMessage"] as string))
-{
-    <div class="alert alert-success" role="alert">
-        @ViewData["EnrollmentMessage"]
+
+<!-- Include the modal markup from the Enroll view -->
+<div class="modal fade" id="enrollModal" tabindex="-1" role="dialog" aria-labelledby="enrollModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="enrollModalLabel">Enroll in Course</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Enrollment form -->
+                <form asp-action="EnrollPost" asp-controller="Courses" method="post">
+                    <input type="hidden" id="courseId" name="courseId" />
+                    <button type="submit" class="btn btn-primary">Enroll</button>
+                </form>
+            </div>
+        </div>
     </div>
-}
-
-@if (!string.IsNullOrEmpty(ViewData["ErrorMessage"] as string))
-{
-    <div class="alert alert-danger" role="alert">
-        @ViewData["ErrorMessage"]
-    </div>
-}
-
-
+</div>
 <h1>Courses</h1>
 
-
-
 <div class="container">
-    <div class="row">
-        @if (User.IsInRole("Teacher"))
-        {
-            <p>
-                <a class="btn btn-primary" asp-action="Create">Create New</a>
-            </p>
-        }
-    </div>
     <div class="row">
         @foreach (var item in Model)
         {
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm">
-                    <img class="card-img-top" src="URL_TO_IMAGE" alt="Course Image">
+                    <img class="card-img-top" src="images/python.png" alt="Course Image">
                     <div class="card-body">
                         <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
                         <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
@@ -45,7 +41,7 @@
                     <div class="card-footer d-flex justify-content-between align-items-center">
                         @if (User.IsInRole("Student"))
                         {
-                            <a class="btn btn-primary btn-sm" asp-action="Enroll" asp-route-id="@item.CourseId">Enroll to the course</a>
+                            <button class="btn btn-primary btn-sm enroll-btn" data-course-id="@item.CourseId" data-toggle="modal" data-target="#enrollModal">Enroll to the course</button>
                         }
                         <div class="btn-group">
                             <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.CourseId">Edit</a>
@@ -58,3 +54,17 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Handle click event on enroll button
+            $('.enroll-btn').click(function () {
+                // Get the course ID from data attribute
+                var courseId = $(this).data('course-id');
+                // Set the course ID in the hidden input field
+                $('#courseId').val(courseId);
+            });
+        });
+    </script>
+}

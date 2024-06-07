@@ -73,6 +73,7 @@ public partial class AcademyContext : DbContext
 
         modelBuilder.Entity<CourseHasStudent>(entity =>
         {
+            entity.HasKey(e => e.Id);
             entity.HasOne(d => d.Course).WithMany()
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_course_has_student_course");

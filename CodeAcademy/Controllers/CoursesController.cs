@@ -248,14 +248,14 @@ namespace CodeAcademy.Controllers
 
                     TempData["EnrollmentMessage"] = "You have successfully enrolled in the course.";
 
-                    return RedirectToAction("Index", "Home"); // Redirect to a different page after enrollment success
+                    return RedirectToAction("CourseMainPage", new { id = id }); // Redirect to the CourseMainPage after enrollment success
                 }
                 catch (Exception ex)
                 {
                     // Handle exceptions
                     Console.WriteLine($"Error enrolling student: {ex.Message}");
                     TempData["ErrorMessage"] = "An error occurred while enrolling in the course. Please try again later.";
-                    return View(course); // Return to the enrollment page with an error message
+                    return RedirectToAction("Enroll", new { id = id }); 
                 }
             }
             else
@@ -263,6 +263,17 @@ namespace CodeAcademy.Controllers
                 TempData["ErrorMessage"] = "You are not authorized to enroll in courses.";
                 return RedirectToAction("Index", "Home"); // Redirect to a different page for unauthorized access
             }
+        }
+
+        public IActionResult CourseMainPage(int id)
+        {
+            var course = _context.Courses.Find(id);
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            return View(course);
         }
 
         // Helper method to get the next available course ID
