@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CodeAcademy.Models;
 using System.Security.Claims;
 using CodeAcademy.ViewModels;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CodeAcademy.Controllers
 {
@@ -343,6 +344,8 @@ namespace CodeAcademy.Controllers
             int nextId = _context.CourseHasStudents.Max(p => (int?)p.Id) ?? 0;
             return nextId + 1;
         }
-               
-    }
+        }
+
+
+    
 }
