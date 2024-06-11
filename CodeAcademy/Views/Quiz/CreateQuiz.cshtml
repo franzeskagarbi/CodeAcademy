@@ -1,0 +1,43 @@
+﻿@model CodeAcademy.Models.CreateQuizModel
+
+@{
+    ViewData["Title"] = "Create Quiz";
+}
+
+<h2>Create Test</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <h5 class="card-title">Section: @ViewData["SectionName"] </h5>
+
+    </div>
+</div>
+
+<div>
+    <form asp-action="CreateQuiz" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="SectionId" />        
+        <div class="form-group">
+            <label asp-for="QuizName" class="control-label"></label>
+            <input asp-for="QuizName" class="form-control" />
+            <span asp-validation-for="QuizName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="TotalPoints" class="control-label"></label>
+            <input asp-for="TotalPoints" class="form-control" />
+            <span asp-validation-for="TotalPoints" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+<div>
+    <a asp-action="ViewSections" asp-route-courseId="@ViewData["CourseId"]">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

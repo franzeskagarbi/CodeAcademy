@@ -1,0 +1,47 @@
+﻿@model IEnumerable<CodeAcademy.Models.CourseHasStudent>
+
+@{
+    ViewData["Title"] = "My Students";
+}
+
+<h1>Enrolled Students</h1>
+
+<div class="container">
+    <div class="row">
+        @foreach (var courseGroup in Model.GroupBy(chs => chs.Course))
+        {
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <!-- Display course information -->
+                    <div class="card-body">
+                        <h5 class="card-title">@Html.DisplayFor(modelItem => courseGroup.Key.Title)</h5>
+                    </div>
+                    <!-- Display student information -->
+                    <ul class="list-group list-group-flush">
+                        @foreach (var enrollment in courseGroup)
+                        {
+                            <li class="list-group-item">
+                                Student: @Html.DisplayFor(modelItem => enrollment.Student.Name) @Html.DisplayFor(modelItem => enrollment.Student.Surname)
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<br />
+<br />
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // click event on enroll button
+            $('.enroll-btn').click(function () {
+                // get courseId from data attribute
+                var courseId = $(this).data('course-id');
+                // set the courseId in the hidden input field
+                $('#courseId').val(courseId);
+            });
+        });
+    </script>
+}

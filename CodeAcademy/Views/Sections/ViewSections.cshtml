@@ -36,7 +36,7 @@
                         </div>
                         <div class="card-footer">
                             <div>
-                                <a class="btn btn-primary btn-sm" href="@Url.Action("Index", "Tests", new { sectionId = item.SectionId })">Create Test</a>
+                                <a class="btn btn-primary btn-sm" href="@Url.Action("CreateQuiz", "Quiz", new { sectionId = item.SectionId })">Create Quiz</a>
                             </div>
                             <div class="btn-group">
                                 <a class="btn btn-sm btn-outline-secondary" asp-action="EditSections" asp-route-id="@item.SectionId">Edit</a>

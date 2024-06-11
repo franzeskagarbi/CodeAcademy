@@ -1,12 +1,19 @@
-﻿namespace CodeAcademy.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CodeAcademy.Models
 {
     public class CreateQuizModel
     {
-        public int CourseId { get; set; }
-        public string CourseTitle { get; set; }
-        public string SectionName { get; set; }
-        public string Description { get; set; }
-        public string QuizName { get; set; }
+        public int QuizId { get; set; }
+        public int SectionId { get; set; }
+
+        [Required]
+        [StringLength(200)]
+        public string QuizName { get; set; } = null!;
+
+        [Required]
         public int TotalPoints { get; set; }
+
+        public List<Question> Questions { get; set; } = new List<Question>();
     }
 }
