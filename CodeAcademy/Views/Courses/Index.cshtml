@@ -77,7 +77,7 @@
                                 <a class="btn btn-primary btn-sm" href="@Url.Action("ViewSections", "Sections", new { courseId = item.CourseId })">View Sections</a>
                             </div>
                            <div class="btn-group">
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="EditSections" asp-route-id="@item.CourseId">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.CourseId">Edit</a>
                             <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@item.CourseId">Details</a>
                             <a class="btn btn-sm btn-outline-secondary" asp-action="Delete" asp-route-id="@item.CourseId">Delete</a>
                             </div>

@@ -134,11 +134,12 @@ namespace CodeAcademy.Controllers
             {
                 return NotFound();
             }
+            ViewData["CourseId"] = section.CourseId;
+
             return View(section);
         }
 
         // POST: Sections/Edit
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSections(int id, [Bind("SectionId,CourseId,SectionName,Description")] CourseSection section)
@@ -148,8 +149,6 @@ namespace CodeAcademy.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
                 try
                 {
                     _context.Update(section);
@@ -166,14 +165,18 @@ namespace CodeAcademy.Controllers
                         throw;
                     }
                 }
+                // Redirect to ViewSections with the courseId after a successful edit
                 return RedirectToAction(nameof(ViewSections), new { courseId = section.CourseId });
-            }
+        
+            // If model state is invalid, return to the edit view with the section model
             return View(section);
         }
+
         private bool SectionExists(int id)
         {
             return _context.CourseSections.Any(e => e.SectionId == id);
         }
+
         // GET: Sections/Delete
         public async Task<IActionResult> Delete(int? id)
         {
@@ -188,6 +191,7 @@ namespace CodeAcademy.Controllers
             {
                 return NotFound();
             }
+            ViewData["CourseId"] = section.CourseId;
 
             return View(section);
         }
@@ -197,15 +201,16 @@ namespace CodeAcademy.Controllers
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
-        {
+        { 
             var section = await _context.CourseSections.FindAsync(id);
+            var courseId = section.CourseId;
             if (section != null)
             {
                 _context.CourseSections.Remove(section);
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(ViewSections));
+            return RedirectToAction(nameof(ViewSections), new { courseId });
         }
 
     }

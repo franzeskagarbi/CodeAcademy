@@ -1,0 +1,26 @@
+﻿@model CodeAcademy.Models.CreateQuizModel
+
+@{
+    ViewData["Title"] = "Create Section";
+
+}
+
+<h2>Create Test</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <h5 class="card-title">Section: @ViewData["SectionName"] </h5>
+
+    </div>
+</div>
+
+<div>
+    <a asp-action="ViewSections" asp-route-courseId="@ViewData["CourseId"]">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

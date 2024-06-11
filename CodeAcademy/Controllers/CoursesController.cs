@@ -62,8 +62,11 @@ namespace CodeAcademy.Controllers
         {
             try
             {
+                
                 if (ModelState.IsValid)
                 {
+                    int maxCourseId = await _context.Courses.MaxAsync(c => (int?)c.CourseId) ?? 0;
+                    int nextCourseId = maxCourseId +1 ;
                     string imageUrl = null;
 
                     if (createCourse.Image != null && createCourse.Image.Length > 0)
@@ -91,7 +94,7 @@ namespace CodeAcademy.Controllers
                     // Create a new Course entity
                     var courseEntity = new Course
                     {
-                        CourseId = createCourse.Id,
+                        CourseId = nextCourseId,
                         Title = createCourse.Title,
                         Description = createCourse.Description,
                         TeacherId = selectedTeacherId,
@@ -188,23 +191,31 @@ namespace CodeAcademy.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Title,TeacherId,Description")] Course course)
+        public async Task<IActionResult> Edit(int id, [Bind("CourseId,Title,Description,ImageUrl")] Course course)
         {
             if (id != course.CourseId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            // Fetch the existing entity from the database
+            var existingCourse = await _context.Courses.FindAsync(id);
+            if (existingCourse == null)
             {
+                return NotFound();
+            }
+                // Update only the fields that need to be changed
+                existingCourse.Title = course.Title;
+                existingCourse.Description = course.Description;
+                existingCourse.ImageUrl = course.ImageUrl; // Make sure to handle this field if it's supposed to be updated
+
                 try
                 {
-                    _context.Update(course);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseExists(course.CourseId))
+                    if (!CourseExists(existingCourse.CourseId))
                     {
                         return NotFound();
                     }
@@ -214,11 +225,10 @@ namespace CodeAcademy.Controllers
                     }
                 }
                 return RedirectToAction(nameof(Index));
-            }
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "UserId", "UserId", course.TeacherId);
-            return View(course);
-        }
 
+            // Return the view with the existing course details if the model state is invalid
+            return View(existingCourse);
+        }
         // GET: Courses/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -244,10 +254,17 @@ namespace CodeAcademy.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var course = await _context.Courses.FindAsync(id);
-            if (course != null)
+            if (course == null)
             {
-                _context.Courses.Remove(course);
+                return NotFound();
             }
+
+            // Remove associated records in courseSections
+            var sections = await _context.CourseSections.Where(cs => cs.CourseId == id).ToListAsync();
+            _context.CourseSections.RemoveRange(sections);
+
+            // Remove the course
+            _context.Courses.Remove(course);
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
