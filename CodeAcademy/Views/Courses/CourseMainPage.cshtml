@@ -1,12 +1,52 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@model CodeAcademy.Models.Course
+﻿@model List<CodeAcademy.Models.CourseSection>
+
 @{
-    ViewData["Title"] = "Course Main Page";
+    ViewData["Title"] = "View Sections";
+    string courseTitle = ViewData["CourseTitle"]?.ToString();
+    int courseId = ViewData["CourseId"] != null ? (int)ViewData["CourseId"] : 0;
 }
 
-<h1>@Model.Title</h1>
-<p>Welcome to the main page for the course: @Model.Title</p>
+<style>
+    .btn-custom {
+        background-color: #a6a6a6; /* Προσαρμοσμένο χρώμα */
+        color: white; /* Χρώμα κειμένου */
+        font-weight: bold;
+    }
+</style>
 
-<!-- Add more details about the course as needed -->
+<div class="d-flex justify-content-between align-items-center">
+    <div class="mb-4">
+        <h2 style="font-weight: bold">Sections for @courseTitle</h2>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="container">
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.SectionName)</h5>
+                            <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <p>No sections available for this course yet.</p>
+}
+
+<div>
+    <a asp-action="Index" asp-controller="Courses">Back to List</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

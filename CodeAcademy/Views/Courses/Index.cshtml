@@ -84,9 +84,11 @@
                         }
                         @if (User.IsInRole("Student"))
                         {
-                            <button class="btn btn-primary btn-sm enroll-btn" data-course-id="@item.CourseId" data-toggle="modal" data-target="#enrollModal">Enroll to the course</button>
+                            <form asp-action="EnrollPost" asp-controller="Courses" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@item.CourseId" />
+                                <button type="submit" class="btn btn-primary btn-sm">Enroll course</button>
+                            </form>
                         }
-
                     </div>
                 </div>
             </div>

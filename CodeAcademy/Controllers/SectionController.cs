@@ -110,7 +110,6 @@ namespace CodeAcademy.Controllers
             return View(courseSections);
         }
 
-
         private int GenerateUniqueSectionId()
         {
              int newId;
@@ -201,7 +200,11 @@ namespace CodeAcademy.Controllers
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
-        { 
+        {
+            var questions = await _context.Questions.Where(cs => cs.QuestionId == id).ToListAsync();
+            _context.Questions.RemoveRange(questions);
+            var quiz = await _context.Quizzes.Where(cs => cs.SectionId == id).ToListAsync();
+            _context.Quizzes.RemoveRange(quiz);
             var section = await _context.CourseSections.FindAsync(id);
             var courseId = section.CourseId;
             if (section != null)

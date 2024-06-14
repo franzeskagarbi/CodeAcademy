@@ -260,6 +260,10 @@ namespace CodeAcademy.Controllers
             }
 
             // Remove associated records in courseSections
+            //var questions = await _context.Questions.Where(cs => cs.QuestionId == id).ToListAsync();
+           // _context.Questions.RemoveRange(questions);
+            //var quiz = await _context.Quizzes.Where(cs => cs.SectionId == id).ToListAsync();
+           // _context.Quizzes.RemoveRange(quiz);
             var sections = await _context.CourseSections.Where(cs => cs.CourseId == id).ToListAsync();
             _context.CourseSections.RemoveRange(sections);
 
@@ -273,24 +277,6 @@ namespace CodeAcademy.Controllers
         private bool CourseExists(int id)
         {
             return _context.Courses.Any(e => e.CourseId == id);
-        }
-
-        // GET: Courses/Enroll/id
-        [HttpGet]
-        public async Task<IActionResult> Enroll(int id)
-        {
-            // Fetch the course details from the database
-            var course = await _context.Courses.FindAsync(id);
-
-            // Check if the course exists
-            if (course == null)
-            {
-                // If the course does not exist, return a not found error
-                return NotFound();
-            }
-
-            // Pass the course model to the view
-            return View(course);
         }
 
         // POST: Courses/Enroll/id
@@ -334,7 +320,7 @@ namespace CodeAcademy.Controllers
                     // Handle exceptions
                     Console.WriteLine($"Error enrolling student: {ex.Message}");
                     TempData["ErrorMessage"] = "An error occurred while enrolling in the course. Please try again later.";
-                    return RedirectToAction("Enroll", new { id = id }); 
+                    return RedirectToAction("Enroll", new { id = id });
                 }
             }
             else
@@ -344,16 +330,30 @@ namespace CodeAcademy.Controllers
             }
         }
 
-        public IActionResult CourseMainPage(int id)
+        // GET: Courses/CourseMainPage/id
+        public async Task<IActionResult> CourseMainPage(int id)
         {
-            var course = _context.Courses.Find(id);
+            var course = await _context.Courses
+                .Include(c => c.CourseSections)
+                .FirstOrDefaultAsync(c => c.CourseId == id);
+
             if (course == null)
             {
                 return NotFound();
             }
 
-            return View(course);
+            var sections = await _context.CourseSections
+                .Where(s => s.CourseId == id)
+                .ToListAsync();
+
+            ViewBag.CourseTitle = course.Title;
+            ViewBag.CourseId = course.CourseId;
+
+            return View(sections);
         }
+
+
+
 
         // Helper method to get the next available course ID
         private int GetNextCourseId()
