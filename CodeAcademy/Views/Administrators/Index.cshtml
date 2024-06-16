@@ -3,43 +3,75 @@
 @{
     ViewData["Title"] = "Contact";
 }
+<style>
+    body {
+        background-color: white; /* Χρώμα φόντου της σελίδας */
+    }
+    table {
+        background-color: white; /* Χρώμα φόντου του πίνακα */
+        color: #000; /* Χρώμα κειμένου του πίνακα */
+    }
+    table th {
+        color: #000; /* Χρώμα κειμένου της κεφαλίδας */
+    }
+    table td {
+        color: #000; /* Χρώμα κειμένου των κελιών */
+    }
+       .content {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+    }
 
-<h1 class="text-center">Contact the admins</h1>
+    .left-side {
+        flex: 1;
+        max-width: 45%;
+    }
+
+        .left-side p {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+    .contact-image {
+        width: 350px;
+        height: auto;
+    }
+
+    .right-side {
+        flex: 1;
+        max-width: 50%;
+    }
+</style>
 <br />
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Surname)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User.Email)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Surname)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.UserId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.Email)
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="content">
+    <div class="left-side">
+        <img style="height:250px;" src="~/images/contact.jpg" alt="Contact Image" class="contact-image" />
+
+        <h2>Contact our administrators</h2>
+        <p>
+            Here you can find the contact details of our administrators. If you have any questions, concerns, or need assistance, please do not hesitate to reach out to any of our administrators listed below. They are here to help you with any inquiries you may have regarding our courses, grades, or any other matter.
+        </p>
+    </div>
+    <div class="right-side">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Name)</th>
+                    <th>@Html.DisplayNameFor(model => model.Surname)</th>
+                    <th>@Html.DisplayNameFor(model => model.User.Email)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Surname)</td>
+                        <td>@Html.DisplayFor(modelItem => item.User.Email)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

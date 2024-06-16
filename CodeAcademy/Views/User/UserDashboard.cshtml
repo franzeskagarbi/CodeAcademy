@@ -27,11 +27,15 @@ else
                 <a class="text-decoration-none text-info" asp-controller="Administrators" asp-action="AssignRole">Assign Roles to Users</a>
             </li>
         }
-        @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+        @if (User.IsInRole("Teacher"))
         {
             <li class="list-group-item">
                 <a class="text-decoration-none text-info" asp-controller="Courses" asp-action="Index">Courses</a>
             </li>
+        }
+        @if (User.IsInRole("Student"))
+        {
+            
         }
     </ul>
 }
