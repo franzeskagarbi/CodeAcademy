@@ -1,0 +1,25 @@
+﻿@model CodeAcademy.Models.CreateQuestionModel
+
+@{
+    ViewData["Title"] = "Edit Question";
+}
+
+<h2>Edit Question</h2>
+
+<form asp-action="EditQuestion">
+    <div class="form-group">
+        <label asp-for="QuestionText" class="control-label"></label>
+        <input asp-for="QuestionText" class="form-control" />
+        <span asp-validation-for="QuestionText" class="text-danger"></span>
+    </div>
+    <input type="hidden" asp-for="QuestionId" />
+    <div class="form-group">
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

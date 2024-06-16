@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CodeAcademy.Models;
 
-[Table("answers")]
+[Table("q_answers")]
 public partial class Answer
 {
     [Key]
@@ -22,8 +22,7 @@ public partial class Answer
     public string Answer1 { get; set; } = null!;
 
     [Column("is_correct")]
-    [MaxLength(1)]
-    public byte[] IsCorrect { get; set; } = null!;
+    public int IsCorrect { get; set; } 
 
     [ForeignKey("QuestionId")]
     [InverseProperty("Answers")]

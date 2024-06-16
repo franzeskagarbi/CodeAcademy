@@ -253,26 +253,49 @@ namespace CodeAcademy.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var course = await _context.Courses.FindAsync(id);
-            if (course == null)
-            {
-                return NotFound();
-            }
+            // Εύρεση όλων των ενοτήτων που ανήκουν στο μάθημα
+            var sections = await _context.CourseSections
+                .Where(cs => cs.CourseId == id)
+                .ToListAsync();
 
-            // Remove associated records in courseSections
-            //var questions = await _context.Questions.Where(cs => cs.QuestionId == id).ToListAsync();
-           // _context.Questions.RemoveRange(questions);
-            //var quiz = await _context.Quizzes.Where(cs => cs.SectionId == id).ToListAsync();
-           // _context.Quizzes.RemoveRange(quiz);
-            var sections = await _context.CourseSections.Where(cs => cs.CourseId == id).ToListAsync();
+            // Εύρεση των quiz που σχετίζονται με τις ενότητες του μαθήματος
+            var quizzes = await _context.Quizzes
+                .Include(q => q.Questions) // Συμπερίληψη των ερωτήσεων που σχετίζονται με το quiz
+                .Where(q => sections.Select(s => s.SectionId).Contains(q.SectionId))
+                .ToListAsync();
+
+            // Εύρεση των ερωτήσεων που ανήκουν στα quiz
+            var questionIds = quizzes.SelectMany(q => q.Questions.Select(qu => qu.QuestionId)).ToList();
+
+            // Εύρεση όλων των απαντήσεων που ανήκουν στις ερωτήσεις
+            var answers = await _context.Answers
+                .Where(a => questionIds.Contains(a.QuestionId))
+                .ToListAsync();
+
+            // Αφαίρεση όλων των απαντήσεων
+            _context.Answers.RemoveRange(answers);
+
+            // Αφαίρεση όλων των ερωτήσεων
+            _context.Questions.RemoveRange(await _context.Questions
+                .Where(q => questionIds.Contains(q.QuestionId))
+                .ToListAsync());
+
+            // Αφαίρεση όλων των quiz
+            _context.Quizzes.RemoveRange(quizzes);
+
+            // Αφαίρεση όλων των ενοτήτων (sections)
             _context.CourseSections.RemoveRange(sections);
 
-            // Remove the course
+            // Αναζήτηση και αφαίρεση του μαθήματος
+            var course = await _context.Courses.FindAsync(id);
             _context.Courses.Remove(course);
 
+            // Αποθήκευση των αλλαγών στη βάση δεδομένων
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool CourseExists(int id)
         {

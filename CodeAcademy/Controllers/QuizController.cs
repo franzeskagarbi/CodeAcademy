@@ -89,21 +89,39 @@ namespace CodeAcademy.Controllers
             {
                 return NotFound();
             }
+
             ViewData["QuizName"] = quiz.QuizName;
-            ViewData["QuizId"] = quizId; 
+            ViewData["QuizId"] = quizId;
 
             var questions = await _context.Questions
                 .Where(q => q.QuizId == quizId)
                 .ToListAsync();
 
-            var questionViewModels = questions.Select(q => new QuestionViewModel
+            var questionViewModels = new List<QuestionViewModel>();
+
+            foreach (var question in questions)
             {
-                QuestionText = q.QuestionText,
-            }).ToList();
+                var answers = await _context.Answers
+                    .Where(a => a.QuestionId == question.QuestionId)
+                    .Select(a => new AnswerViewModel
+                    {
+                        AnswerId = a.AnswerId,
+                        AnswerText = a.Answer1,
+                    })
+                    .ToListAsync();
+
+                var questionViewModel = new QuestionViewModel
+                {
+                    QuestionId = question.QuestionId,
+                    QuestionText = question.QuestionText,
+                    Answers = answers
+                };
+
+                questionViewModels.Add(questionViewModel);
+            }
 
             return View(questionViewModels);
         }
-
         // GET: Quiz/CreateQuestion
         [HttpGet]
         public IActionResult CreateQuestion(int quizId)
@@ -121,27 +139,149 @@ namespace CodeAcademy.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Εδώ μπορείτε να κάνετε τις απαραίτητες ενέργειες για να αποθηκεύσετε την ερώτηση
-
-                // Παράδειγμα αποθήκευσης στη βάση δεδομένων (υποθέτοντας ότι έχετε σχετικό context _context)
                 var question = new Question
                 {
+                    QuestionId = GenerateUniqueQuizId(),
                     QuizId = model.QuizId,
                     QuestionText = model.QuestionText
-                    // Προσθέστε άλλα πεδία αν χρειάζεται
                 };
 
                 _context.Questions.Add(question);
                 await _context.SaveChangesAsync();
 
-                // Μετά την επιτυχή αποθήκευση, μπορείτε να κάνετε redirect σε άλλη προβολή
                 return RedirectToAction("ViewQuestions", new { quizId = model.QuizId });
             }
+            return View(model);
+        }
+        // GET: Answer/Create
+        [HttpGet]
+        public IActionResult CreateAnswer(int questionId)
+        {
+            ViewData["QuestionId"] = questionId;
 
-            // Αν το ModelState δεν είναι έγκυρο, επιστροφή στην ίδια προβολή με τα σφάλματα του ModelState
+            return View();
+        }
+
+        // POST: Answer/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAnswer(CreateAnswerModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var answer = new Answer
+                {
+                    AnswerId = GenerateUniqueQuizId(),
+                    QuestionId = model.QuestionId,
+                    Answer1 = model.AnswerText,
+                    IsCorrect = model.IsCorrect
+                };
+
+                _context.Answers.Add(answer);
+                await _context.SaveChangesAsync();
+                var question = await _context.Questions.FindAsync(model.QuestionId);
+                if (question == null)
+                {
+                    return NotFound();
+                }
+                var quizId = question.QuizId;
+                return RedirectToAction("ViewQuestions", new { quizId });
+            }
+
+            return View(model);
+        }
+        [HttpGet]
+        public async Task<IActionResult> EditQuestion(int questionId)
+        {
+            var question = await _context.Questions.FindAsync(questionId);
+            if (question == null)
+            {
+                return NotFound();
+            }
+
+            var model = new CreateQuestionModel
+            {
+                QuestionId = question.QuestionId,
+                QuestionText = question.QuestionText
+            };
+
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditQuestion(CreateQuestionModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var question = await _context.Questions.FindAsync(model.QuestionId);
+                if (question == null)
+                {
+                    return NotFound();
+                }
+
+                question.QuestionText = model.QuestionText;
+
+                _context.Questions.Update(question);
+                await _context.SaveChangesAsync();
+
+                var quizId = question.QuizId;
+
+                return RedirectToAction("ViewQuestions", new { quizId });
+            }
+
+            return View(model);
+        }
+
+        // POST: Answer/Delete
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAnswer(int answerId)
+        {
+            var answer = await _context.Answers.FindAsync(answerId);
+            if (answer == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                _context.Answers.Remove(answer);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+
+            var question = await _context.Questions.FindAsync(answer.QuestionId);
+            if (question == null)
+            {
+                return NotFound();
+            }
+            var quizId = question.QuizId;
+
+            return RedirectToAction("ViewQuestions", new { quizId });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteQuestion(int questionId)
+        {
+            var question = await _context.Questions.FindAsync(questionId);
+            if (question == null)
+            {
+                return NotFound();
+            }
+
+            var answers = _context.Answers.Where(a => a.QuestionId == questionId);
+            _context.Answers.RemoveRange(answers);
+
+            _context.Questions.Remove(question);
+            await _context.SaveChangesAsync();
+
+            var quizId = question.QuizId;
+            return RedirectToAction("ViewQuestions", new { quizId});
+        }
 
         private int GenerateUniqueQuizId()
         {

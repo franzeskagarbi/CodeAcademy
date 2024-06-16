@@ -1,5 +1,44 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CodeAcademy.Models.CreateAnswerModel
+
 @{
+    ViewData["Title"] = "Create Answer";
+}
+
+<h2>Create Answer</h2>
+<div class="row">
+    <div class="col-md-4">
+        <h5 class="card-title">Quiz name: @ViewData["QuestionId"] </h5>
+
+    </div>
+</div>
+<div>
+    <form asp-action="CreateAnswer" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="QuestionId" />
+        <div class="form-group">
+            <label asp-for="AnswerText" class="control-label"></label>
+            <input asp-for="AnswerText" class="form-control" />
+            <span asp-validation-for="AnswerText" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="IsCorrect" class="control-label"></label>
+            <select asp-for="IsCorrect" class="form-control">
+                <option value="0">Incorrect</option>
+                <option value="1">Correct</option>
+            </select>
+            <span asp-validation-for="IsCorrect" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+<div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -175,7 +175,6 @@ namespace CodeAcademy.Controllers
         {
             return _context.CourseSections.Any(e => e.SectionId == id);
         }
-
         // GET: Sections/Delete
         public async Task<IActionResult> Delete(int? id)
         {
@@ -195,26 +194,55 @@ namespace CodeAcademy.Controllers
             return View(section);
         }
 
-
         // POST: Sections/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var questions = await _context.Questions.Where(cs => cs.QuestionId == id).ToListAsync();
+            // Εύρεση των quiz που σχετίζονται με την ενότητα
+            var quizzes = await _context.Quizzes
+                .Include(q => q.Questions) // Συμπερίληψη των ερωτήσεων που σχετίζονται με το quiz
+                .Where(q => q.SectionId == id)
+                .ToListAsync();
+
+            // Εύρεση των ερωτήσεων που ανήκουν στα quiz και σχετίζονται με την ενότητα
+            var questionIds = quizzes.SelectMany(q => q.Questions.Select(qu => qu.QuestionId)).ToList();
+
+            // Διαγραφή των απαντήσεων που ανήκουν στις ερωτήσεις
+            var answers = await _context.Answers
+                .Where(a => questionIds.Contains(a.QuestionId))
+                .ToListAsync();
+            _context.Answers.RemoveRange(answers);
+
+            // Διαγραφή των ερωτήσεων
+            var questions = await _context.Questions
+                .Where(q => questionIds.Contains(q.QuestionId))
+                .ToListAsync();
             _context.Questions.RemoveRange(questions);
-            var quiz = await _context.Quizzes.Where(cs => cs.SectionId == id).ToListAsync();
-            _context.Quizzes.RemoveRange(quiz);
+
+            // Διαγραφή των quiz
+            _context.Quizzes.RemoveRange(quizzes);
+
+            // Εύρεση της ενότητας
             var section = await _context.CourseSections.FindAsync(id);
-            var courseId = section.CourseId;
             if (section != null)
             {
                 _context.CourseSections.Remove(section);
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Internal server error while deleting the section.");
+            }
+
+            var courseId = section.CourseId;
             return RedirectToAction(nameof(ViewSections), new { courseId });
         }
+
 
     }
 }
