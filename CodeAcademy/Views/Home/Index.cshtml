@@ -1,11 +1,152 @@
-﻿@{
+﻿@model IEnumerable<CodeAcademy.Models.Course>
+
+@{
     ViewData["Title"] = "Learn to code";
 }
+<style>
+    .content {
+        display: flex;
+        justify-content: center; /* Center content horizontally */
+        align-items: center; /* Center content vertically */
+        padding: 50px;
+    }
+    .content2{
+        background-color: #99ebff;
+        display: flex;
+        justify-content: center; /* Center content horizontally */
+        align-items: center; /* Center content vertically */
+        padding: 50px;
+    }
 
-<div class="text-center">
-    <h1 class="display-4">Learn to code</h1>
-    <p> Explore a range of free lessons, tutorials, and resources for each programming language.</p>
-    <p> Start learning today!</p>
+    .left-side {
+        flex: 1;
+        max-width: 50%;
+    }
+
+    .contact-image {
+        width: 480px;
+    }
+
+    .right-side {
+        flex: 1;
+        max-width: 45%;
+    }
+
+    #courseCarousel {
+        width: 1100px; /* Set your desired width */
+        margin: 0 auto; /* Center the carousel horizontally */
+        overflow: hidden; /* Hide overflow content if any */
+    }
+
+    .carousel-item {
+        width: 100%; /* Ensure carousel items fill the carousel container */
+        height: 100%; /* Ensure carousel items fill the carousel container */
+    }
+    .carousel-controls {
+        display: flex;
+        flex-direction: column; /* Stack controls vertically */
+        align-items: center; /* Center controls horizontally */
+        margin-top: 10px; /* Adjust margin top as needed */
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        margin-bottom: 5px; /* Adjust margin between controls */
+    }
+
+    .carousel-inner {
+        background-color: #99ffdd; /* Example background color */
+        padding: 15px; /* Example padding */
+        border-radius: 5px; /* Example border radius */
+    }
+    .content-courses{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center; 
+    }
+    .carousel-control-prev-icon, .carousel-control-next-icon {
+        color: black; 
+    }
+
+</style>
+<div class="content">
+    <div class="left-side">
+        <h1 class="display-4" style="font-style:bold;">Discover the world of coding</h1>
+        <br />
+        <p> Explore a range of free lessons, tutorials, and resources for each programming language.</p>
+        <p>
+            Whether you're a beginner or an experienced programmer, our resources cater to all skill levels. Join a community of learners, gain practical experience, and build your portfolio with hands-on projects. Stay updated with the latest trends in technology and programming.
+            Start learning today!
+        </p>
+    </div>
+    <div class="right-side">
+        <img style="height:400px;" src="~/images/coding.jpg" alt="Coding Image" class="contact-image" />
+     </div>
 </div>
-
-
+<br />
+<br />
+<br />
+<br />
+<div class="content-courses">
+    <h1 class="display-4" style="font-style:bold;">Courses</h1>
+    <p>Our programming courses are designed to cater to all needs and skill levels.</p>
+    </div>
+<div class="content-courses">
+      <div id="courseCarousel" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+            @if (Model != null && Model.Any())
+            {
+                var isActive = true;
+                foreach (var course in Model)
+                {
+                            <div class="carousel-item @(isActive ? "active" : "")">
+                                <h1>@course.Title</h1>
+                                <p>@course.Description</p>
+                            </div>
+                    isActive = false;
+                }
+            }
+        </div>
+       <div class="carousel-controls">
+            <a class="carousel-control-prev" href="#courseCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#courseCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </div>
+</div>
+<br />
+<br />
+<br />
+<br />
+<br />
+<div class="content2">
+    <div class="right-side">
+        <img style="height:350px;width:350px;" src="~/images/onlinecourses.jpg" alt="Courses Image" />
+    </div>
+    <div class="left-side">
+        <h3 class="display-4" style="font-style:bold;">Quiz after Each Section</h3>
+        <br />
+        <p>Review your test results and performance</p>
+        <p>
+            Reflect on your understanding and progress after completing each module. Our assessments are designed to help you gauge your mastery of the material. Whether you've just started or are a seasoned learner, these tests cater to all skill levels.
+            Join our community of learners, gain practical insights, and track your progress. Stay updated with the latest developments in the field and enhance your skills in programming and technology. Start learning and testing your knowledge today!
+        </p>
+    </div>
+</div>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
