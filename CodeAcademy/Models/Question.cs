@@ -23,14 +23,14 @@ public partial class Question
     [Unicode(false)]
     public string QuestionText { get; set; } = null!;
 
-    [InverseProperty("Question")]
-    public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
+    public List<Answer> Answers { get; set; }
+
 
     [ForeignKey("QuizId")]
     [InverseProperty("Questions")]
     public virtual Quiz Quiz { get; set; } = null!;
     [Column("points")]
-    public int points { get; set; }
+    public int Points { get; set; }
 
 
 }

@@ -7,6 +7,6 @@ namespace CodeAcademy.Models
         public int QuizId { get; set; }
 
         public List<Question> Questions { get; set; }
-        public List<AnswerSubmission> Answers { get; set; }
+        public List<AnswerSubmission> StudentAnswers { get; set; }
     }
 }

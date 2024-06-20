@@ -72,8 +72,9 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="quiz-container">
         <input type="hidden" name="QuizId" value="@Model.QuizId">
-        @foreach (var question in Model.Questions)
+        @for (int i = 0; i < Model.Questions.Count; i++)
         {
+            var question = Model.Questions[i];
             <div class="question-container">
                 <h4>@question.QuestionText</h4>
                 <ul class="answer-options">
@@ -81,19 +82,22 @@
                     {
                         <li class="answer-option">
                             <label>
-                                <input type="radio" name="answers[@question.QuestionId].SelectedAnswerId" value="@answer.AnswerId" />
-                                @Html.DisplayFor(modelItem => answer.Answer1)
+                                <input type="radio" name="answers[@i].SelectedAnswerId" value="@answer.AnswerId" required  />
+                                @answer.Answer1
                             </label>
                         </li>
                     }
                 </ul>
+                <input type="hidden" name="answers[@i].QuestionId" value="@question.QuestionId" />
             </div>
         }
         <div class="form-group">
-            <input type="submit" value="Create" class="btn btn-primary" />
+            <input type="submit" value="Submit" class="btn btn-primary" />
         </div>
     </div>
 </form>
+
+
 
 <br />
 <br />

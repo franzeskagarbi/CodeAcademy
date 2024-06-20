@@ -6,6 +6,6 @@
         public int QuestionId { get; set; }
         public string QuestionText { get; set; } 
 
-        public int points { get; set; }
+        public int Points { get; set; }
     }
 }
