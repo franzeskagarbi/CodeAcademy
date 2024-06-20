@@ -49,9 +49,22 @@ namespace CodeAcademy.Controllers
         // GET: Courses/Create
         public IActionResult Create()
         {
-            CreateCourseModel courseModel = new CreateCourseModel();
-            ViewData["TeacherId"] = new SelectList(_context.Teachers, "UserId", "Name");
-            return View(courseModel);
+            var teacherId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == teacherId);
+
+            if (teacher == null)
+            {
+                return NotFound("Teacher not found");
+            }
+
+            var createCourseModel = new CreateCourseModel
+            {
+                TeacherId = teacherId
+            };
+
+            ViewBag.TeacherId = new SelectList(new List<Teacher> { teacher }, "UserId", "Name", teacherId);
+
+            return View(createCourseModel);
         }
 
         // POST: Courses/Create

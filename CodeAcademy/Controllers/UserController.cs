@@ -148,7 +148,7 @@ namespace CodeAcademy.Controllers
 
 
                         Console.WriteLine("redirect");
-                        return RedirectToAction("UserDashboard");
+                        return RedirectToAction("Index", "Home");
                     }
                 }
 

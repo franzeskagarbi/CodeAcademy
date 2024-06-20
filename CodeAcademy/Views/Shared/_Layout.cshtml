@@ -34,19 +34,19 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">                     
                         <li>
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Administrators" asp-action="Index">Contact</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Administrators" asp-action="Index" >Contact</a>
                         </li>
                     </ul>
                 </div>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end" >
-                    <ul class="navbar-nav">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav  flex-grow-1">
                         @if (User.Identity.IsAuthenticated && User.IsInRole("Teacher") )
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Courses" asp-action="Index" style="font-weight: bold;">Courses</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="" asp-action="" style="font-weight: bold;">Grades</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Grades" asp-action="TeacherGradesView" style="font-weight: bold;">Grades</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Teacher" asp-action="ViewStudents" style="font-weight: bold;">Students</a>
@@ -58,13 +58,10 @@
                         @if (User.Identity.IsAuthenticated && User.IsInRole("Student"))
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark" style="font-weight: bold;">@User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Courses" asp-action="Index" style="font-weight: bold;">Courses</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="EditProfile" style="font-weight: bold;">only for students</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Grades" asp-action="StudentGradesView" style="font-weight: bold;">My Grades</a>
                             </li>
                         }
                 </div>

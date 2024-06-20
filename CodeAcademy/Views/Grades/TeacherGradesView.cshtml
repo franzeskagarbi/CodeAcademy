@@ -1,0 +1,38 @@
+﻿@model List<TotalScoreViewModel>
+
+@{
+    ViewData["Title"] = "Grades";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>Course</th>
+                        <th>Total Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.StudentId</td>
+                            <td>@item.StudentName</td>
+                            <td>@item.StudentSurname</td>
+                            <td>@item.CourseTitle</td>
+                            <td>@item.TotalScore</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+

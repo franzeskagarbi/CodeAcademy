@@ -1,0 +1,49 @@
+﻿@model List<StudentGradesViewModel>
+
+@{
+    ViewData["Title"] = "My Grades";
+}
+
+<div class="container mt-4">
+    <h2 class="text-center">@ViewData["Title"]</h2>
+    <div class="row">
+        @foreach (var courseGroup in Model.GroupBy(g => g.CourseTitle))
+        {
+            <div class="col-md-12 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title">@courseGroup.Key</h3>
+                        <h5 class="text-right">Total Score: @courseGroup.First().TotalCourseScore</h5>
+                        @foreach (var sectionGroup in courseGroup.GroupBy(g => g.SectionName))
+                        {
+                            <h5 class="mt-4">Section: @sectionGroup.Key</h5>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Quiz Name</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var quiz in sectionGroup)
+                                    {
+                                        <tr>
+                                            <td>@quiz.QuizName</td>
+                                            <td>@quiz.Score</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />

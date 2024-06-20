@@ -60,7 +60,7 @@ namespace CodeAcademy.Controllers
                     QuizId = quizId,
                     SectionId = sectionId,
                     QuizName = quizName,
-                    TotalPoints = totalPoints
+                    TotalPoints = 0
                 };
 
                 _context.Quizzes.Add(quiz);
