@@ -5,5 +5,7 @@
         public int QuizId { get; set; }
         public int QuestionId { get; set; }
         public string QuestionText { get; set; } 
+
+        public int points { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace CodeAcademy.Models
         public int TotalPoints { get; set; }
         public int QuizId { get; set; }
         public string QuestionText { get; set; }
+        public int points { get; set; }
 
     }
 }

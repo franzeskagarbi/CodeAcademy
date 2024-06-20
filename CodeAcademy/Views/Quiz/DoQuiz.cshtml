@@ -1,0 +1,102 @@
+﻿@model CodeAcademy.Models.QuizSubmissionViewModel
+
+
+<style>
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+    .content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .left-side {
+        max-width: 50%;
+        padding-right: 20px;
+    }
+
+    .right-side {
+        max-width: 50%;
+        padding-left: 20px;
+        border-left: 1px solid #ccc;
+    }
+
+    .contact-image {
+        height: 200px;
+        width: 200px;
+        margin-bottom: 20px;
+    }
+
+    .quiz-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .question-container {
+        width: 80%;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    .answer-option {
+        margin-bottom: 10px;
+    }
+
+    .submit-btn {
+        margin-top: 20px;
+    }
+</style>
+
+<div class="content">
+    <div class="left-side">
+        <img src="~/images/quiz.jpg" alt="Coding Image" class="contact-image" />
+    </div>
+    <div class="right-side">
+        <h1 class="display-4">Time for a Quiz!</h1>
+        <p>Answer the following questions to the best of your ability. Choose an answer for each question and click "Submit" when you're done. Good luck!</p>
+    </div>
+</div>
+
+
+<form asp-action="DoQuiz" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="quiz-container">
+        <input type="hidden" name="QuizId" value="@Model.QuizId">
+        @foreach (var question in Model.Questions)
+        {
+            <div class="question-container">
+                <h4>@question.QuestionText</h4>
+                <ul class="answer-options">
+                    @foreach (var answer in question.Answers)
+                    {
+                        <li class="answer-option">
+                            <label>
+                                <input type="radio" name="answers[@question.QuestionId].SelectedAnswerId" value="@answer.AnswerId" />
+                                @Html.DisplayFor(modelItem => answer.Answer1)
+                            </label>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </div>
+</form>
+
+<br />
+<br />
+<br />
+<br />
+<br />

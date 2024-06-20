@@ -27,7 +27,6 @@ namespace CodeAcademy.Controllers
             var academyContext = _context.Courses.Include(c => c.Teacher);
             return View(await academyContext.ToListAsync());
         }
-
         // GET: Courses/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -317,25 +316,37 @@ namespace CodeAcademy.Controllers
                 return NotFound();
             }
 
-            //current logged-in user's userId
+            // Current logged-in user's userId
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            //if user is student
+            // If user is student
             if (!string.IsNullOrEmpty(userId) && User.IsInRole("Student"))
             {
                 try
                 {
+                    // Check if the student is already enrolled in this course
+                    var existingEnrollment = await _context.CourseHasStudents
+                        .FirstOrDefaultAsync(e => e.CourseId == id && e.StudentId == Int32.Parse(userId));
+
+                    if (existingEnrollment != null)
+                    {
+                        // If already enrolled, show a message or handle as per your requirement
+                        TempData["EnrollmentMessage"] = "You are already enrolled in this course.";
+                        return RedirectToAction("CourseMainPage", new { id = id });
+                    }
+
+                    // If not already enrolled, proceed with enrollment
                     var courseHasStudent = new CourseHasStudent
                     {
                         CourseId = id,
                         StudentId = Int32.Parse(userId),
-                        Id = GetNextCourseId()
+                        Id = GetNextCourseId() // Assuming GetNextCourseId() retrieves the next available id for the relationship
                     };
+
                     _context.CourseHasStudents.Add(courseHasStudent);
                     await _context.SaveChangesAsync();
 
                     TempData["EnrollmentMessage"] = "You have successfully enrolled in the course.";
-
                     return RedirectToAction("CourseMainPage", new { id = id }); // Redirect to the CourseMainPage after enrollment success
                 }
                 catch (Exception ex)
@@ -352,6 +363,7 @@ namespace CodeAcademy.Controllers
                 return RedirectToAction("Index", "Home"); // Redirect to a different page for unauthorized access
             }
         }
+
 
         // GET: Courses/CourseMainPage/id
         public async Task<IActionResult> CourseMainPage(int id)

@@ -22,8 +22,6 @@ public partial class Grade
     [Column("score")]
     public int Score { get; set; }
 
-    [Column("date")]
-    public DateOnly Date { get; set; }
 
     [ForeignKey("QuizId")]
     [InverseProperty("Grades")]

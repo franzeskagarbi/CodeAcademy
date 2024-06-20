@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using static System.Collections.Specialized.BitVector32;
 
@@ -293,5 +294,118 @@ namespace CodeAcademy.Controllers
 
             return newId;
         }
+        // GET: Quiz/DoQuiz/{sectionId}
+        public IActionResult DoQuiz(int sectionId)
+        {
+            var quiz = _context.Quizzes
+                               .Include(q => q.Questions)
+                               .ThenInclude(q => q.Answers)
+                               .FirstOrDefault(q => q.SectionId == sectionId);
+
+            if (quiz == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new QuizSubmissionViewModel
+            {
+                QuizId = quiz.QuizId,
+                Answers = quiz.Questions.Select(q => new AnswerSubmission { QuestionId = q.QuestionId }).ToList(),
+                Questions = quiz.Questions.ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DoQuiz(int QuizId, List<AnswerSubmission> answers)
+        {
+            string currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // Convert currentUserId to integer
+            if (!int.TryParse(currentUserId, out int userIdInt))
+            {
+                // If conversion fails, return error or redirect the user
+                return RedirectToAction("ViewQuestions", new { QuizId });
+            }
+
+            // Find the student with userIdInt
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == userIdInt);
+            if (student == null)
+            {
+                // If student is not found, return error or redirect the user
+                return RedirectToAction("ViewQuestions", new { QuizId });
+            }
+
+            // Check if the QuizId is valid
+            var quiz = await _context.Quizzes.FindAsync(QuizId);
+            if (quiz == null)
+            {
+                // If the quiz with the given QuizId does not exist, return error or redirect the user
+                return RedirectToAction("ViewQuestions", new { QuizId });
+            }
+
+            // Check if the student has already taken the quiz for this QuizId
+            var existingGrade = await _context.Grades.FirstOrDefaultAsync(g => g.StudentId == student.UserId && g.QuizId == QuizId);
+            int totalScore = 0;
+
+            // Calculate total score based on submitted answers
+            foreach (var answer in answers)
+            {
+                // Retrieve the question from the database to get its points
+                var question = await _context.Questions
+                    .FirstOrDefaultAsync(q => q.QuestionId == answer.QuestionId && q.QuizId == QuizId);
+
+                if (question != null)
+                {
+                    // Debugging: Ensure points are retrieved correctly
+                    Console.WriteLine($"Question ID: {question.QuestionId}, Points: {question.points}");
+
+                    // Retrieve the correct answer for the question
+                    var correctAnswer = await _context.Answers
+                        .FirstOrDefaultAsync(a => a.QuestionId == answer.QuestionId && a.IsCorrect == 1);
+
+                    if (correctAnswer != null)
+                    {
+                        // Debugging: Ensure answer comparison logic
+                        Console.WriteLine($"Correct Answer ID: {correctAnswer.AnswerId}, Selected Answer ID: {answer.SelectedAnswerId}");
+
+                        // If the selected answer matches the correct answer, add points to total score
+                        if (correctAnswer.AnswerId == answer.SelectedAnswerId)
+                        {
+                            totalScore += question.points; // corrected 'points' to 'Points' based on class standards
+                                                           // Debugging: Ensure points are being added
+                            Console.WriteLine($"Added {question.points} points. Total Score: {totalScore}");
+                        }
+                    }
+                }
+            }
+
+            if (existingGrade != null)
+            {
+                // If a grade record already exists, update it
+                existingGrade.Score = totalScore;
+            }
+            else
+            {
+                // Create a new grade record if it does not exist
+                Grade newGrade = new Grade
+                {
+                    GradeId = GenerateUniqueQuizId(), // Assuming this method generates a unique grade ID
+                    StudentId = student.UserId,
+                    QuizId = QuizId,
+                    Score = totalScore,
+                };
+
+                _context.Grades.Add(newGrade);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Redirect to the quiz results page
+            return RedirectToAction("CourseMainPage", "Courses", new { id = 0 });
+        }
+
+
     }
 }

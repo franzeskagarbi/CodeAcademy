@@ -6,6 +6,7 @@
         public int QuizId { get; set; }
         public int QuestionId { get; set; }
         public List<AnswerViewModel> Answers { get; set; }
+        public int points {  get; set; }
 
     }
 }

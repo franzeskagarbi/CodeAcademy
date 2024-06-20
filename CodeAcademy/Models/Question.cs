@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CodeAcademy.Models;
 
@@ -27,4 +29,8 @@ public partial class Question
     [ForeignKey("QuizId")]
     [InverseProperty("Questions")]
     public virtual Quiz Quiz { get; set; } = null!;
+    [Column("points")]
+    public int points { get; set; }
+
+
 }

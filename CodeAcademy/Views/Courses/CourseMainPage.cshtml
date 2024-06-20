@@ -8,8 +8,8 @@
 
 <style>
     .btn-custom {
-        background-color: #a6a6a6; /* Προσαρμοσμένο χρώμα */
-        color: white; /* Χρώμα κειμένου */
+        background-color: #a6a6a6;
+        color: white;
         font-weight: bold;
     }
 </style>
@@ -24,18 +24,27 @@
 {
     <div class="container">
         <div class="row">
-            @foreach (var item in Model)
-            {
-                <div class="col-md-4">
-                    <div class="card mb-4 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.SectionName)</h5>
-                            <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
+            <div id="sectionsContainer">
+                @foreach (var item in Model)
+                {
+                    <div class="col-md-4 section" style="display: none;">
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">@Html.DisplayFor(modelItem => item.SectionName)</h5>
+                                <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                                <hr />
+                                <a class="btn btn-primary btn-sm" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Quiz</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
         </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <button id="nextButton" class="btn btn-primary">Next</button>
     </div>
 }
 else
@@ -48,5 +57,37 @@ else
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sections = document.querySelectorAll(".section");
+            let currentIndex = 0;
+
+            function showNextSection() {
+                if (currentIndex < sections.length) {
+                    sections[currentIndex].style.display = "none"; // Hide current section
+                    currentIndex++;
+                }
+
+                if (currentIndex < sections.length) {
+                    sections[currentIndex].style.display = "block"; // Show next section
+                }
+
+                if (currentIndex === sections.length - 1) {
+                    document.getElementById("nextButton").style.display = "none"; // Hide next button on last section
+                }
+            }
+
+            document.getElementById("nextButton").addEventListener("click", showNextSection);
+
+            // Initially show the first section
+            if (sections.length > 0) {
+                sections[0].style.display = "block";
+            }
+
+            // Hide next button if there's only one section
+            if (sections.length <= 1) {
+                document.getElementById("nextButton").style.display = "none";
+            }
+        });
+    </script>
 }
