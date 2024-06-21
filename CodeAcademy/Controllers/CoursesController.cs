@@ -45,7 +45,16 @@ namespace CodeAcademy.Controllers
 
             return View(course);
         }
+        private int GenerateUniqueId()
+        {
+            int newId;
+            do
+            {
+                newId = new Random().Next(1, int.MaxValue);
+            } while (_context.Courses.Any(q => q.CourseId == newId));
 
+            return newId;
+        }
         // GET: Courses/Create
         public IActionResult Create()
         {
@@ -77,8 +86,6 @@ namespace CodeAcademy.Controllers
                 
                 if (ModelState.IsValid)
                 {
-                    int maxCourseId = await _context.Courses.MaxAsync(c => (int?)c.CourseId) ?? 0;
-                    int nextCourseId = maxCourseId +1 ;
                     string imageUrl = null;
 
                     if (createCourse.Image != null && createCourse.Image.Length > 0)
@@ -106,7 +113,7 @@ namespace CodeAcademy.Controllers
                     // Create a new Course entity
                     var courseEntity = new Course
                     {
-                        CourseId = nextCourseId,
+                        CourseId = GenerateUniqueId(),
                         Title = createCourse.Title,
                         Description = createCourse.Description,
                         TeacherId = selectedTeacherId,

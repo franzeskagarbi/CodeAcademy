@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <h5 class="card-title">Course: @ViewData["CourseTitle"] ,@ViewData["CourseId"]</h5>
+        <h5 class="card-title">Course: @ViewData["CourseTitle"]</h5>
 
         <form asp-action="CreateSections" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -22,7 +22,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+                <input asp-for="Description" class="form-control" maxlength="1000" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
