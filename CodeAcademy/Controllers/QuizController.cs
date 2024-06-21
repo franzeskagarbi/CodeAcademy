@@ -394,8 +394,23 @@ namespace CodeAcademy.Controllers
             }
 
             await _context.SaveChangesAsync();
+            // Fetch course and section IDs based on QuizId
+            var quizInfo = await _context.Quizzes
+                .Include(q => q.Section) // Assuming Quiz has a navigation property to Section
+                .ThenInclude(s => s.Course) // Assuming Section has a navigation property to Course
+                .Where(q => q.QuizId == QuizId)
+                .Select(q => new { CourseId = q.Section.Course.CourseId, SectionId = q.Section.SectionId })
+                .FirstOrDefaultAsync();
 
-            return RedirectToAction("CourseMainPage", "Courses", new { id = 0 });
+            if (quizInfo == null)
+            {
+                return NotFound(); // Handle case where quizId doesn't exist or isn't associated correctly
+            }
+
+            int courseId = quizInfo.CourseId;
+            int sectionId = quizInfo.SectionId;
+
+            return RedirectToAction("CourseMainPage", "Courses", new { id = courseId });
         }
 
 

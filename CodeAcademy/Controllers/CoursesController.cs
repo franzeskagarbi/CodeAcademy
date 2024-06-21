@@ -298,6 +298,23 @@ namespace CodeAcademy.Controllers
             // Αφαίρεση όλων των ενοτήτων (sections)
             _context.CourseSections.RemoveRange(sections);
 
+            // Εύρεση όλων των εγγραφών των μαθητών που ανήκουν στο μάθημα
+            var coursehasStudents = await _context.CourseHasStudents
+                .Where(cs => cs.CourseId == id)
+                .ToListAsync();
+
+            // Αφαίρεση όλων των εγγραφών των μαθητών
+            _context.CourseHasStudents.RemoveRange(coursehasStudents);
+
+            // Εύρεση όλων των βαθμών που σχετίζονται με το μάθημα
+            var studentIds = coursehasStudents.Select(cs => cs.StudentId).ToList();
+            var grades = await _context.Grades
+                .Where(g => studentIds.Contains(g.StudentId) && quizzes.Select(q => q.QuizId).Contains(g.QuizId))
+                .ToListAsync();
+
+            // Αφαίρεση όλων των βαθμών
+            _context.Grades.RemoveRange(grades);
+
             // Αναζήτηση και αφαίρεση του μαθήματος
             var course = await _context.Courses.FindAsync(id);
             _context.Courses.Remove(course);

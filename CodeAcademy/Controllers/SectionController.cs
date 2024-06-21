@@ -223,6 +223,13 @@ namespace CodeAcademy.Controllers
             // Διαγραφή των quiz
             _context.Quizzes.RemoveRange(quizzes);
 
+            // Εύρεση των βαθμών που σχετίζονται με τα κουίζ της ενότητας
+            var quizIds = quizzes.Select(q => q.QuizId).ToList();
+            var grades = await _context.Grades
+                .Where(g => quizIds.Contains(g.QuizId))
+                .ToListAsync();
+            _context.Grades.RemoveRange(grades);
+
             // Εύρεση της ενότητας
             var section = await _context.CourseSections.FindAsync(id);
             if (section != null)
@@ -242,6 +249,7 @@ namespace CodeAcademy.Controllers
             var courseId = section.CourseId;
             return RedirectToAction(nameof(ViewSections), new { courseId });
         }
+
 
 
     }
