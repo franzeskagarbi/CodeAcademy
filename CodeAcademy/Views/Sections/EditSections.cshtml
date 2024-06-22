@@ -4,33 +4,40 @@
     ViewData["Title"] = "Edit Section";
 }
 
-<h1>Edit Section</h1>
-
-<h4>Section</h4>
-<hr />
-<div>
+<div class="container">
+    <br />
+    <h2 class="text-center" style="font-size: 2rem;">Edit Section</h2>
+    <br />
+    <div class="row justify-content-center">
+        <div class="col-md-6">
     <form asp-action="EditSections">
         <div class="form-group">
             <label asp-for="SectionName" class="control-label"></label>
-            <input asp-for="SectionName" class="form-control" />
+                    <input asp-for="SectionName" class="form-control" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%;" />
             <span asp-validation-for="SectionName" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <label asp-for="Description" class="control-label"></label>
-            <input asp-for="Description" class="form-control" />
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label"></label>
+                    <textarea asp-for="Description" class="form-control" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%; height:200px;resize: none;" maxlength="5000"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
         <input type="hidden" asp-for="SectionId" />
         <input type="hidden" asp-for="CourseId" />
         <div class="form-group">
             <input type="submit" value="Save" class="btn btn-primary" />
         </div>
     </form>
-    <div>
-        <a asp-action="ViewSections" asp-route-courseId="@Model.CourseId">Back to List</a>
-    </div>
+  </div>
 </div>
-
+<br />
+<br />
+<br />
+        <div>
+            <a asp-action="ViewSections" asp-route-courseId="@Model.CourseId">Back</a>
+        </div>
+        <br />
+        <br />
+        <br />
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

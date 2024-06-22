@@ -22,7 +22,7 @@ public partial class CourseSection
     public string SectionName { get; set; } = null!;
 
     [Column("description")]
-    [StringLength(50)]
+    [StringLength(5000)]
     [Unicode(false)]
     public string Description { get; set; } = null!;
 

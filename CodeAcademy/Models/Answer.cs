@@ -17,7 +17,7 @@ public partial class Answer
     public int QuestionId { get; set; }
 
     [Column("answer")]
-    [StringLength(200)]
+    [StringLength(500)]
     [Unicode(false)]
     public string Answer1 { get; set; } = null!;
 

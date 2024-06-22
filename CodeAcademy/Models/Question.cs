@@ -19,7 +19,7 @@ public partial class Question
     public int QuizId { get; set; }
 
     [Column("question_text")]
-    [StringLength(200)]
+    [StringLength(500)]
     [Unicode(false)]
     public string QuestionText { get; set; } = null!;
 

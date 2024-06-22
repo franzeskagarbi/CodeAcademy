@@ -4,27 +4,29 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
 
-<h4>Course</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
+
+<div class="container">
+    <br />
+    <h2 class="text-center" style="font-size: 2rem;">Edit</h2>
+    <br />
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+        <form asp-action="Edit Course Info">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="CourseId" />
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
+                    <input asp-for="Title" class="form-control" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%;" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+                    <input asp-for="Description" class="form-control" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%;" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="hidden"  asp-for="ImageUrl" class="form-control" />
+                    <input type="hidden" asp-for="ImageUrl" class="form-control" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%;" />
                 <span asp-validation-for="ImageUrl" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -33,11 +35,15 @@
         </form>
     </div>
 </div>
-
+<br />
+<br />
+<br />
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Back</a>
 </div>
-
+<br />
+<br />
+<br />
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

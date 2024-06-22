@@ -22,7 +22,7 @@ public partial class Course
     public int TeacherId { get; set; }
 
     [Column("description")]
-    [StringLength(50)]
+    [StringLength(1000)]
     [Unicode(false)]
     public string Description { get; set; } = null!;
 

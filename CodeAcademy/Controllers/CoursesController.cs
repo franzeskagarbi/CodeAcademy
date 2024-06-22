@@ -373,14 +373,29 @@ namespace CodeAcademy.Controllers
                     }
 
                     // If not already enrolled, proceed with enrollment
-                    var courseHasStudent = new CourseHasStudent
-                    {
-                        CourseId = id,
-                        StudentId = Int32.Parse(userId),
-                        Id = GetNextCourseId() // Assuming GetNextCourseId() retrieves the next available id for the relationship
-                    };
 
-                    _context.CourseHasStudents.Add(courseHasStudent);
+                    // Fetch sections for the course and order them alphabetically by SectionName
+                    var sections = await _context.CourseSections
+                        .Where(s => s.CourseId == id)
+                        .OrderBy(s => s.SectionName)
+                        .ToListAsync();
+
+                    // Assuming GetNextCourseId() retrieves the next available id for the relationship
+                    var courseId = GetNextCourseId();
+
+                    // Loop through sorted sections and add to CourseHasStudents
+                    foreach (var section in sections)
+                    {
+                        var courseHasStudent = new CourseHasStudent
+                        {
+                            CourseId = id,
+                            StudentId = Int32.Parse(userId),
+                            Id = courseId
+                        };
+
+                        _context.CourseHasStudents.Add(courseHasStudent);
+                    }
+
                     await _context.SaveChangesAsync();
 
                     TempData["EnrollmentMessage"] = "You have successfully enrolled in the course.";
@@ -400,7 +415,6 @@ namespace CodeAcademy.Controllers
                 return RedirectToAction("Index", "Home"); // Redirect to a different page for unauthorized access
             }
         }
-
 
         // GET: Courses/CourseMainPage/id
         public async Task<IActionResult> CourseMainPage(int id)

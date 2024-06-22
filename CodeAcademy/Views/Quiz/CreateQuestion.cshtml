@@ -4,21 +4,23 @@
     ViewData["Title"] = "Create Question";
 }
 
-<h2>Create Test</h2>
-<hr />
-
-
-<div>
+<body style="background-color: #ccffee;">
+    <div class="container">
+        <br />
+        <h2 class="text-center" style="font-size: 2rem;">Create Question</h2>
+        <br />
+        <div class="row justify-content-center">
+            <div class="col-md-6">
     <form asp-action="CreateQuestion" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="QuizId" />        
         <div class="form-group">
             <label asp-for="QuestionText" class="control-label"></label>
-            <input asp-for="QuestionText" class="form-control" />
+            <input asp-for="QuestionText" class="form-control" maxlength="500" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%;" />
             <span asp-validation-for="QuestionText" class="text-danger"></span>
             <div class="form-group">
                 <label asp-for="Points" class="control-label"></label>
-                <input asp-for="Points" class="form-control" />
+                <input asp-for="Points" class="form-control" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%;" />
                 <span asp-validation-for="Points" class="text-danger"></span>
             </div>
         </div>
@@ -27,16 +29,13 @@
         </div>
     </form>
 </div>
-<div>
-    <a asp-action="ViewSections" asp-route-courseId="@ViewData["CourseId"]">Back to List</a>
-</div>
-
+</body>
+            <br />
+            <br />
+            <br />
+            <br />
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-<br />
-<br />
-<br />
-<br />

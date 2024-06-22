@@ -12,9 +12,11 @@
         font-weight: bold;
     }
 </style>
+<body style="background-color: #ccffee;">
+
 <div class="d-flex justify-content-between align-items-center">
     <div class="mb-4">
-        <h2 style="font-weight: bold">Sections for @courseTitle</h2>
+        <h2 style="font-weight: bold">Sections: @courseTitle</h2>
     </div>
     <div class="mb-4 ml-auto">
         <a class="btn btn-custom" asp-controller="Sections" asp-action="CreateSections" asp-route-courseId="@courseId">+ Create Section</a>
@@ -36,7 +38,7 @@
                         </div>
                         <div class="card-footer">
                             <div>
-                                <a class="btn btn-primary btn-sm" href="@Url.Action("CreateQuiz", "Quiz", new { sectionId = item.SectionId })">Create Quiz</a>
+                                <a class="btn btn-primary btn-sm" href="@Url.Action("CreateQuiz", "Quiz", new { sectionId = item.SectionId })">Quiz</a>
                             </div>
                             <div class="btn-group">
                                 <a class="btn btn-sm btn-outline-secondary" asp-action="EditSections" asp-route-id="@item.SectionId">Edit</a>
@@ -53,11 +55,17 @@ else
 {
     <p>No sections available for this course yet.</p>
 }
-
+<br />
+<br />
+<br />
 <div>
-    <a asp-action="Index" asp-controller="Courses">Back to List</a>
+    <a asp-action="Index" asp-controller="Courses">Back</a>
 </div>
-
+<br />
+<br />
+<br />
+<br />
+</body>
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
