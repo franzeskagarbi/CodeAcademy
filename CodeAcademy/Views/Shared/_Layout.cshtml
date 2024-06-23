@@ -70,13 +70,7 @@
                         @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark" style="font-weight: bold;">@User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Logout" style="font-weight: bold;">I am an administrator</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="EditProfile" style="font-weight: bold;">only for administrators</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Administrators" asp-action="AssignRole" style="font-weight: bold;">Assign Role</a>
                             </li>
                         }
                 </div>
