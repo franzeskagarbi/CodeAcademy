@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using X.PagedList;
+using NuGet.DependencyResolver;
 
 namespace CodeAcademy.Controllers
 {
@@ -200,6 +201,7 @@ namespace CodeAcademy.Controllers
             return RedirectToAction("Login");
         }
 
+       
         // GET: User/Create
         public IActionResult Create()
         {
@@ -299,9 +301,11 @@ namespace CodeAcademy.Controllers
 
         public IActionResult EditProfile(int userId)
         {
+            Console.WriteLine($"EditProfile GET called with userId: {userId}");
             var user = _context.Users.Find(userId);
             if (user == null)
             {
+                Console.WriteLine($"User with userId: {userId} not found.");
                 return NotFound();
             }
 
@@ -320,6 +324,8 @@ namespace CodeAcademy.Controllers
                             Surname = admin.Surname,
                             Role = "admin"
                         };
+                        Console.WriteLine($"Admin found: {admin.Name} {admin.Surname}");
+
                     }
                     break;
                 case "student":
@@ -333,6 +339,8 @@ namespace CodeAcademy.Controllers
                             Surname = student.Surname,
                             Role = "student"
                         };
+                        Console.WriteLine($"Student found: {student.Name} {student.Surname}");
+
                     }
                     break;
                 case "teacher":
@@ -347,6 +355,8 @@ namespace CodeAcademy.Controllers
                             Telephone = teacher.PhoneNumber.ToString(),
                             Role = "teacher"
                         };
+                        Console.WriteLine($"Teacher found: {teacher.Name} {teacher.Surname}");
+
                     }
                     break;
             }
@@ -364,6 +374,8 @@ namespace CodeAcademy.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult EditProfile(EditProfileViewModel model)
         {
+            Console.WriteLine($"EditProfile POST called with userId: {model.UserId}");
+
             if (ModelState.IsValid)
             {
                 switch (model.Role?.ToLower()?.Trim())
@@ -374,6 +386,8 @@ namespace CodeAcademy.Controllers
                         {
                             admin.Name = model.Name;
                             admin.Surname = model.Surname;
+                            Console.WriteLine($"Admin updated: {admin.Name} {admin.Surname}");
+
                         }
                         break;
                     case "student":
@@ -382,6 +396,8 @@ namespace CodeAcademy.Controllers
                         {
                             student.Name = model.Name;
                             student.Surname = model.Surname;
+                            Console.WriteLine($"Student updated: {student.Name} {student.Surname}");
+
                         }
                         break;
                     case "teacher":
@@ -393,6 +409,8 @@ namespace CodeAcademy.Controllers
                                 teacher.Name = model.Name;
                                 teacher.Surname = model.Surname;
                                 teacher.PhoneNumber = phoneNumber;
+                                Console.WriteLine($"Teacher updated: {teacher.Name} {teacher.Surname} with phone: {teacher.PhoneNumber}");
+
                             }
                         }
                             
@@ -400,16 +418,21 @@ namespace CodeAcademy.Controllers
                 }
 
                 _context.SaveChanges();
+                Console.WriteLine($"Changes saved to the database for userId: {model.UserId}");
+
                 //log in after editing/adding for the 1st time personal info
                 var user = _context.Users.FirstOrDefault(u => u.UserId == model.UserId);
                 if (user != null)
                 {
                     HttpContext.Session.SetString("UserID", user.UserId.ToString());
                     HttpContext.Session.SetString("UserName", user.Username);
+                    Console.WriteLine($"Session updated for userId: {user.UserId}");
+
                 }
 
-                return RedirectToAction("UserDashboard");
+                return RedirectToAction("Index", "Home");
             }
+            Console.WriteLine("Model state is invalid.");
 
             return View(model);
         }

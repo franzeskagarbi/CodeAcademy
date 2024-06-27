@@ -384,7 +384,7 @@ namespace CodeAcademy.Controllers
                     var courseId = GetNextCourseId();
 
                     // Loop through sorted sections and add to CourseHasStudents
-                    foreach (var section in sections)
+                    /*foreach (var section in sections)
                     {
                         var courseHasStudent = new CourseHasStudent
                         {
@@ -394,7 +394,14 @@ namespace CodeAcademy.Controllers
                         };
 
                         _context.CourseHasStudents.Add(courseHasStudent);
-                    }
+                    } */
+                    var courseHasStudent = new CourseHasStudent
+                    {
+                        CourseId = id,
+                        StudentId = Int32.Parse(userId),
+                        Id = GetNextCourseId()
+                    };
+                    _context.CourseHasStudents.Add(courseHasStudent);
 
                     await _context.SaveChangesAsync();
 

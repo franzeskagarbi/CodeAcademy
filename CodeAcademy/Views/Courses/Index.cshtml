@@ -29,9 +29,12 @@
                 </button>
             </div>
             <div class="modal-body">
-                <!-- enrollment form -->
-                <form asp-action="EnrollPost" asp-controller="Courses" method="post">
-                    <input type="hidden" id="courseId" name="courseId" />
+                Are you sure you want to enroll in this course?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="enrollForm" asp-action="EnrollPost" asp-controller="Courses" method="post">
+                    <input type="hidden" id="courseId" name="id" />
                     <button type="submit" class="btn btn-primary">Enroll</button>
                 </form>
             </div>
@@ -88,10 +91,11 @@
                         }
                         @if (User.IsInRole("Student"))
                         {
-                            <form asp-action="EnrollPost" asp-controller="Courses" method="post" style="display:inline;">
+                            <!--<form asp-action="EnrollPost" asp-controller="Courses" method="post" style="display:inline;"> -->
                                 <input type="hidden" name="id" value="@item.CourseId" />
-                                <button type="submit" class="btn btn-primary btn-sm">Enroll Course</button>
-                            </form>
+                                <!--<button type="submit" class="btn btn-primary btn-sm">Enroll Course</button>-->
+                                <button class="btn btn-primary btn-sm enroll-btn" data-course-id="@item.CourseId" data-toggle="modal" data-target="#enrollModal">Enroll to the course</button>
+                           <!-- </form>-->
                         }
                     </div>
                 </div>

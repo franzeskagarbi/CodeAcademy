@@ -5,6 +5,18 @@
     string courseTitle = ViewData["CourseTitle"]?.ToString();
     int courseId = ViewData["CourseId"] != null ? (int)ViewData["CourseId"] : 0;
 }
+@if (TempData["EnrollmentMessage"] != null)
+{
+    <div id="enrollmentMessage" class="alert alert-success temp-message">
+        @TempData["EnrollmentMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div id="errorMessage" class="alert alert-danger temp-message">
+        @TempData["ErrorMessage"]
+    </div>
+}
 
 <style>
     .btn-custom {
@@ -113,6 +125,14 @@ else
             if (sections.length <= 1) {
                 document.getElementById("nextButton").style.display = "none";
             }
+        });
+
+        //function to stop showing the message after redirecting to the page
+        $(document).ready(function () {
+            // Hide the messages after 10 seconds
+            setTimeout(function () {
+                $('.temp-message').fadeOut('slow');
+            }, 10000); // 10,000 milliseconds = 10 seconds
         });
     </script>
 }
