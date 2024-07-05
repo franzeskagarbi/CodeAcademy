@@ -352,7 +352,7 @@ namespace CodeAcademy.Controllers
                             UserId = user.UserId,
                             Name = teacher.Name,
                             Surname = teacher.Surname,
-                            Telephone = teacher.PhoneNumber.ToString(),
+                            Telephone = teacher.PhoneNumber,
                             Role = "teacher"
                         };
                         Console.WriteLine($"Teacher found: {teacher.Name} {teacher.Surname}");
@@ -375,6 +375,22 @@ namespace CodeAcademy.Controllers
         public IActionResult EditProfile(EditProfileViewModel model)
         {
             Console.WriteLine($"EditProfile POST called with userId: {model.UserId}");
+            Console.WriteLine($"Telephone value: {model.Telephone}");
+            model.Telephone = model.Telephone?.Trim();
+
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("Model state is invalid.");
+                foreach (var key in ModelState.Keys)
+                {
+                    var state = ModelState[key];
+                    foreach (var error in state.Errors)
+                    {
+                        Console.WriteLine($"Key: {key}, Error: {error.ErrorMessage}");
+                    }
+                }
+                return View(model);
+            }
 
             if (ModelState.IsValid)
             {
@@ -402,20 +418,27 @@ namespace CodeAcademy.Controllers
                         break;
                     case "teacher":
                         var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == model.UserId);
-                        if (int.TryParse(model.Telephone, out int phoneNumber))
+                        if (teacher != null)
                         {
-                            if (teacher != null)
+                            teacher.Name = model.Name;
+                            teacher.Surname = model.Surname;
+                            if (!string.IsNullOrEmpty(model.Telephone))
                             {
-                                teacher.Name = model.Name;
-                                teacher.Surname = model.Surname;
-                                teacher.PhoneNumber = phoneNumber;
-                                Console.WriteLine($"Teacher updated: {teacher.Name} {teacher.Surname} with phone: {teacher.PhoneNumber}");
-
+                                if (model.Telephone.Length == 10) // Assuming 10-digit phone number validation
+                                {
+                                    teacher.PhoneNumber = model.Telephone; // Store as string in database
+                                    Console.WriteLine($"Teacher updated: {teacher.Name} {teacher.Surname} with phone: {teacher.PhoneNumber}");
+                                }
+                                else
+                                {
+                                    ModelState.AddModelError("Telephone", "Please enter a valid 10-digit telephone number");
+                                    return View(model);
+                                }
                             }
                         }
-                            
                         break;
                 }
+            
 
                 _context.SaveChanges();
                 Console.WriteLine($"Changes saved to the database for userId: {model.UserId}");
@@ -428,7 +451,20 @@ namespace CodeAcademy.Controllers
                     HttpContext.Session.SetString("UserName", user.Username);
                     Console.WriteLine($"Session updated for userId: {user.UserId}");
 
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.Name, user.Username),
+                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                        new Claim(ClaimTypes.Role, user.Role)
+                    };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity)).Wait();
+                    Console.WriteLine($"Claims updated and user re-authenticated for userId: {user.UserId}");
                 }
+                                
+
 
                 return RedirectToAction("Index", "Home");
             }

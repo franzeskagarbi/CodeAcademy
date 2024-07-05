@@ -17,14 +17,14 @@
         <input asp-for="Surname" class="form-control" />
         <span asp-validation-for="Surname" class="text-danger"></span>
     </div>
-    @if (Model.Role.ToLower().Trim() == "teacher")
+   @if (Model.Role.ToLower().Trim() == "teacher") 
     {
         <div class="form-group">
             <label asp-for="Telephone" class="control-label"></label>
-            <input asp-for="Telephone" class="form-control" />
+            <input asp-for="Telephone" class="form-control" value="@Model.Telephone?.Trim()" />
             <span asp-validation-for="Telephone" class="text-danger"></span>
         </div>
-    }
+    } 
     <input type="hidden" asp-for="UserId" />
     <input type="hidden" asp-for="Role" />
     <button type="submit" class="btn btn-primary">Save</button>

@@ -25,7 +25,9 @@ public partial class Teacher
     public string Surname { get; set; } = "tba";
 
     [Column("phone_number")]
-    public int PhoneNumber { get; set; }
+    [StringLength(50)]
+    [Unicode(false)]
+    public string PhoneNumber { get; set; } = "0";
 
     [InverseProperty("Teacher")]
     public virtual ICollection<Course> Courses { get; set; } = new List<Course>();

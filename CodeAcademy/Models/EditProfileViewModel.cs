@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeAcademy.Models
 {
@@ -16,8 +17,7 @@ namespace CodeAcademy.Models
 
         public string Role { get; set; } // which table to update
 
-        [RegularExpression("^[0-9]{10}$", ErrorMessage = "Please enter a valid 10-digit telephone number")]
-        public string Telephone { get; set; } // for teachers
-
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please enter a valid 10-digit telephone number")]
+        public string Telephone { get; set; } // for teachers (optional)
     }
 }
