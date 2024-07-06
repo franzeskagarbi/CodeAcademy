@@ -128,8 +128,16 @@ namespace CodeAcademy.Controllers
 
                         if (name == "tba" || surname == "tba")
                         {
-                            // Redirect to the edit form to complete the profile
-                            return RedirectToAction("EditProfile", new { userId = user.UserId });
+                            // Redirect to the appropriate edit form to complete the profile
+                            switch (user.Role?.ToLower()?.Trim())
+                            {
+                                case "admin":
+                                    return RedirectToAction("EditAdminStudent", new { userId = user.UserId });
+                                case "student":
+                                    return RedirectToAction("EditAdminStudent", new { userId = user.UserId });
+                                case "teacher":
+                                    return RedirectToAction("EditTeacherProfile", new { userId = user.UserId });
+                            }
                         }
                         // Passwords match, login successful
                         //_session.SetString("UserID", user.UserId.ToString());
@@ -299,7 +307,8 @@ namespace CodeAcademy.Controllers
             return saltBytes;
         }
 
-        public IActionResult EditProfile(int userId)
+        [HttpGet("/user/editprofile/adminstudent/{userId}")]
+        public IActionResult EditAdminStudent(int userId)
         {
             Console.WriteLine($"EditProfile GET called with userId: {userId}");
             var user = _context.Users.Find(userId);
@@ -325,7 +334,6 @@ namespace CodeAcademy.Controllers
                             Role = "admin"
                         };
                         Console.WriteLine($"Admin found: {admin.Name} {admin.Surname}");
-
                     }
                     break;
                 case "student":
@@ -340,43 +348,172 @@ namespace CodeAcademy.Controllers
                             Role = "student"
                         };
                         Console.WriteLine($"Student found: {student.Name} {student.Surname}");
-
-                    }
-                    break;
-                case "teacher":
-                    var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == userId);
-                    if (teacher != null)
-                    {
-                        model = new EditProfileViewModel
-                        {
-                            UserId = user.UserId,
-                            Name = teacher.Name,
-                            Surname = teacher.Surname,
-                            Telephone = teacher.PhoneNumber,
-                            Role = "teacher"
-                        };
-                        Console.WriteLine($"Teacher found: {teacher.Name} {teacher.Surname}");
-
                     }
                     break;
             }
 
-            
             if (model == null)
             {
                 return NotFound();
             }
 
-            return View(model);
+            return View("EditProfile", model);
         }
 
-        [HttpPost]
+        [HttpGet("/user/editprofile/teacher/{userId}")]
+        public IActionResult EditTeacherProfile(int userId)
+        {
+            Console.WriteLine($"EditProfile GET called with userId: {userId}");
+            var user = _context.Users.Find(userId);
+            if (user == null)
+            {
+                Console.WriteLine($"User with userId: {userId} not found.");
+                return NotFound();
+            }
+            EditTeacherProfileViewModel model = null;
+            var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == userId);
+            if (teacher == null) return NotFound();
+
+            model = new EditTeacherProfileViewModel
+            {
+                UserId = teacher.UserId,
+                Name = teacher.Name,
+                Surname = teacher.Surname,
+                Telephone = teacher.PhoneNumber,
+                Role = "teacher"
+            };
+
+            return View("EditTeacherProfile", model);
+        }
+
+        [HttpGet("/user/editprofile/{userId}")]
+        public IActionResult EditProfile(int userId)
+        {
+            var user = _context.Users.Find(userId);
+            if (user == null) return NotFound();
+
+            switch (user.Role?.ToLower()?.Trim())
+            {
+                case "admin":
+                case "student":
+                    return RedirectToAction("EditAdminStudent", new { userId });
+                case "teacher":
+                    return RedirectToAction("EditTeacherProfile", new { userId });
+                default:
+                    return NotFound();
+            }
+        }
+
+        [HttpPost("/user/editprofile/teacher/{userId}")]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditTeacherProfile(EditTeacherProfileViewModel model)
+        {
+            Console.WriteLine("EditTeacherProfile POST method called");
+
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("Model is invalid");
+                return View("EditTeacherProfile", model);
+            }
+
+            var teacher = _context.Teachers.FirstOrDefault(t => t.UserId == model.UserId);
+            if (teacher == null)
+            {
+                return NotFound();
+            }
+
+            teacher.Name = model.Name;
+            teacher.Surname = model.Surname;
+            teacher.PhoneNumber = model.Telephone;
+
+            _context.SaveChanges();
+
+            Console.WriteLine($"Changes saved to the database for userId: {model.UserId}");
+
+            var user = _context.Users.FirstOrDefault(u => u.UserId == model.UserId);
+            if (user != null)
+            {
+                HttpContext.Session.SetString("UserID", user.UserId.ToString());
+                HttpContext.Session.SetString("UserName", user.Username);
+                Console.WriteLine($"Session updated for userId: {user.UserId}");
+
+                var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity)).Wait();
+                Console.WriteLine($"Claims updated and user re-authenticated for userId: {user.UserId}");
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost("/user/editprofile/adminstudent")]
+        [ValidateAntiForgeryToken]
+        public IActionResult EditProfile(EditProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("EditProfile", model);
+            }
+
+            var user = _context.Users.Find(model.UserId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var admin = _context.Administrators.FirstOrDefault(a => a.UserId == model.UserId);
+            if (admin != null)
+            {
+                admin.Name = model.Name;
+                admin.Surname = model.Surname;
+            }
+
+            var student = _context.Students.FirstOrDefault(s => s.UserId == model.UserId);
+            if (student != null)
+            {
+                student.Name = model.Name;
+                student.Surname = model.Surname;
+            }
+
+            Console.WriteLine($"Changes saved to the database for userId: {model.UserId}");
+
+            if (user != null)
+            {
+                HttpContext.Session.SetString("UserID", user.UserId.ToString());
+                HttpContext.Session.SetString("UserName", user.Username);
+                Console.WriteLine($"Session updated for userId: {user.UserId}");
+
+                var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.Role, user.Role)
+        };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity)).Wait();
+                Console.WriteLine($"Claims updated and user re-authenticated for userId: {user.UserId}");
+            }
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        /*[HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult EditProfile(EditProfileViewModel model)
         {
             Console.WriteLine($"EditProfile POST called with userId: {model.UserId}");
-            Console.WriteLine($"Telephone value: {model.Telephone}");
-            model.Telephone = model.Telephone?.Trim();
+            //Console.WriteLine($"Telephone value: {model.Telephone}");
+            //model.Telephone = model.Telephone?.Trim();
 
             if (!ModelState.IsValid)
             {
@@ -403,7 +540,6 @@ namespace CodeAcademy.Controllers
                             admin.Name = model.Name;
                             admin.Surname = model.Surname;
                             Console.WriteLine($"Admin updated: {admin.Name} {admin.Surname}");
-
                         }
                         break;
                     case "student":
@@ -413,7 +549,6 @@ namespace CodeAcademy.Controllers
                             student.Name = model.Name;
                             student.Surname = model.Surname;
                             Console.WriteLine($"Student updated: {student.Name} {student.Surname}");
-
                         }
                         break;
                     case "teacher":
@@ -422,11 +557,11 @@ namespace CodeAcademy.Controllers
                         {
                             teacher.Name = model.Name;
                             teacher.Surname = model.Surname;
-                            if (!string.IsNullOrEmpty(model.Telephone))
+                            if (model is EditTeacherProfileViewModel teacherModel && !string.IsNullOrEmpty(teacherModel.Telephone))
                             {
-                                if (model.Telephone.Length == 10) // Assuming 10-digit phone number validation
+                                if (teacherModel.Telephone.Length == 10) // Assuming 10-digit phone number validation
                                 {
-                                    teacher.PhoneNumber = model.Telephone; // Store as string in database
+                                    teacher.PhoneNumber = teacherModel.Telephone; // Store as string in database
                                     Console.WriteLine($"Teacher updated: {teacher.Name} {teacher.Surname} with phone: {teacher.PhoneNumber}");
                                 }
                                 else
@@ -438,7 +573,7 @@ namespace CodeAcademy.Controllers
                         }
                         break;
                 }
-            
+
 
                 _context.SaveChanges();
                 Console.WriteLine($"Changes saved to the database for userId: {model.UserId}");
@@ -471,7 +606,7 @@ namespace CodeAcademy.Controllers
             Console.WriteLine("Model state is invalid.");
 
             return View(model);
-        }
+        } */
 
         public async Task<IActionResult> LogoutAsync()
         {
@@ -518,7 +653,7 @@ namespace CodeAcademy.Controllers
             }
 
             return View(user);
-        }
+        } 
 
         // GET: Users/Delete/5
         public async Task<IActionResult> Delete(string id)

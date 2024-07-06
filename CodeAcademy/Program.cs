@@ -61,6 +61,15 @@ app.MapControllerRoute(
             pattern: "Courses/Enroll/{id}",
             defaults: new { controller = "Courses", action = "EnrollGet" });
 
+app.MapControllerRoute(
+    name: "editTeacherProfile",
+    pattern: "/user/editprofile/teacher/{userId}",
+    defaults: new { controller = "User", action = "EditTeacherProfile" });
+
+app.MapControllerRoute(
+    name: "editProfile",
+    pattern: "/user/editprofile/adminstudent",
+    defaults: new { controller = "User", action = "EditProfile" });
 
 
 

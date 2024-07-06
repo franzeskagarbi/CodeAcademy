@@ -2,7 +2,7 @@
 
 namespace CodeAcademy.Models
 {
-    public class EditProfileViewModel 
+    public class EditTeacherProfileViewModel 
     {
         public int UserId { get; set; }
 
@@ -15,5 +15,8 @@ namespace CodeAcademy.Models
         public string Surname { get; set; }
 
         public string Role { get; set; }
+
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please enter a valid 10-digit telephone number")]
+        public string Telephone { get; set; }
     }
 }
