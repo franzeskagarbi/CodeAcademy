@@ -17,6 +17,7 @@ namespace CodeAcademy.Controllers
         {
             _context = context;
         }
+
         [HttpGet]
         public async Task<IActionResult> CreateQuizAsync(int sectionId)
         {
@@ -66,6 +67,8 @@ namespace CodeAcademy.Controllers
                 _context.Quizzes.Add(quiz);
                 await _context.SaveChangesAsync();
 
+                await UpdateQuizTotalPoints(quizId);
+
                 TempData["SuccessMessage"] = "Quiz created successfully.";
                 return RedirectToAction("ViewQuestions", new { quizId = quizId });
 
@@ -81,6 +84,22 @@ namespace CodeAcademy.Controllers
             }
             return RedirectToAction("CreateQuiz", new { sectionId = sectionId });
         }
+
+        //helper method
+        private async Task UpdateQuizTotalPoints(int quizId)
+        {
+            var totalPoints = await _context.Questions
+                                           .Where(q => q.QuizId == quizId)
+                                           .SumAsync(q => q.Points);
+
+            var quiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.QuizId == quizId);
+            if (quiz != null)
+            {
+                quiz.TotalPoints = totalPoints;
+                await _context.SaveChangesAsync();
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> ViewQuestions(int quizId)
         {
@@ -151,10 +170,14 @@ namespace CodeAcademy.Controllers
                 _context.Questions.Add(question);
                 await _context.SaveChangesAsync();
 
+                // Update TotalPoints for the quiz after adding a question
+                await UpdateQuizTotalPoints(model.QuizId);
+
                 return RedirectToAction("ViewQuestions", new { quizId = model.QuizId });
             }
             return View(model);
         }
+
         // GET: Answer/Create
         [HttpGet]
         public IActionResult CreateAnswer(int questionId)
@@ -280,8 +303,11 @@ namespace CodeAcademy.Controllers
 
             _context.Questions.Remove(question);
             await _context.SaveChangesAsync();
+                        
 
             var quizId = question.QuizId;
+            // Calculate total points for the quiz after deleting the question
+            await UpdateQuizTotalPoints(quizId);
             return RedirectToAction("ViewQuestions", new { quizId});
         }
 
