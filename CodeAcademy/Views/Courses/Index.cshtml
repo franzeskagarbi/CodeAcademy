@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Courses";
+    var teacherId = ViewData["TeacherId"] as int?;
 }
 
 <style>
@@ -64,6 +65,8 @@
     </div>
 
 }
+
+
 <br />
 <div class="container">
     <div class="row">
@@ -78,8 +81,8 @@
                         <p class="card-text"><small class="text-muted">Teacher: @String.Format("{0} {1}", item.Teacher.Name, item.Teacher.Surname)</small></p>
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
-                        @if (User.IsInRole("Teacher"))
-                        {   
+                        @if (User.IsInRole("Teacher") && item.TeacherId == teacherId)
+                         {
                             <div>
                                 <a class="btn btn-primary btn-sm" href="@Url.Action("ViewSections", "Sections", new { courseId = item.CourseId })">View Sections</a>
                             </div>

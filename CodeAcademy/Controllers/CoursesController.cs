@@ -25,8 +25,20 @@ namespace CodeAcademy.Controllers
         public async Task<IActionResult> Index()
         {
             var academyContext = _context.Courses.Include(c => c.Teacher);
+            var loggedInUserName = User.Identity.Name;
+
+            // Query the database to find the TeacherId based on the username
+            var teacherId = _context.Teachers
+                .Where(t => t.Name == loggedInUserName)
+                .Select(t => t.UserId)
+                .Cast<int?>()
+                .FirstOrDefault();
+
+            // Pass teacherId to the view
+            ViewData["TeacherId"] = teacherId;
             return View(await academyContext.ToListAsync());
         }
+
         // GET: Courses/Details/5
         public async Task<IActionResult> Details(int? id)
         {
