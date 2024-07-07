@@ -321,6 +321,16 @@ namespace CodeAcademy.Controllers
 
             return newId;
         }
+
+        private int GetCourseIdForSection(int sectionId)
+        {
+            var course = _context.CourseSections
+                                .Where(s => s.SectionId == sectionId)
+                                .Select(s => s.CourseId)
+                                .FirstOrDefault();
+            return course;
+        }
+
         // GET: Quiz/DoQuiz/{sectionId}
         public IActionResult DoQuiz(int sectionId)
         {
@@ -331,7 +341,8 @@ namespace CodeAcademy.Controllers
 
             if (quiz == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "For now, no quiz is set for this section.";
+                return RedirectToAction("CourseMainPage", "Courses", new { id = GetCourseIdForSection(sectionId), error = true });
             }
 
             var viewModel = new QuizSubmissionViewModel
@@ -430,7 +441,7 @@ namespace CodeAcademy.Controllers
 
             if (quizInfo == null)
             {
-                return NotFound(); // Handle case where quizId doesn't exist or isn't associated correctly
+                TempData["ErrorMessage"] = "No quiz is set for this course."; // Handle case where quizId doesn't exist or isn't associated correctly
             }
 
             int courseId = quizInfo.CourseId;
