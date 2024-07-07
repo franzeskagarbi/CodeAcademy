@@ -3,29 +3,43 @@
 @{
     ViewData["Title"] = "Edit Teacher Profile";
 }
+<style>
+    .container {
+        width: 800px;
+    }
+</style>
+<body style="background-color: #ccffee;">
+    <div class="container">
+        <br />
+        <h1 class="text-center" style="font-size: 2rem;">Edit personal information</h1>
+        <br />
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form asp-action="EditTeacherProfile" method="post" asp-controller="User">
+                    <div class="form-group">
+                        <label asp-for="Name"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Surname"></label>
+                        <input asp-for="Surname" class="form-control" />
+                        <span asp-validation-for="Surname" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Telephone" class="control-label"></label>
+                        <input asp-for="Telephone" class="form-control" />
+                        <span asp-validation-for="Telephone" class="text-danger"></span>
+                    </div>
+                    <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="Role" value="teacher" />
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
 
-<h2>Edit Teacher Profile</h2>
-
-<form asp-action="EditTeacherProfile" method="post" asp-controller="User">
-    <div class="form-group">
-        <label asp-for="Name"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
     </div>
-    <div class="form-group">
-        <label asp-for="Surname"></label>
-        <input asp-for="Surname" class="form-control" />
-        <span asp-validation-for="Surname" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Telephone" class="control-label"></label>
-        <input asp-for="Telephone" class="form-control" />
-        <span asp-validation-for="Telephone" class="text-danger"></span>
-    </div>
-    <input type="hidden" asp-for="UserId" />
-    <input type="hidden" asp-for="Role" value="teacher" />
-    <button type="submit" class="btn btn-primary">Save</button>
-</form>
+</body>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
