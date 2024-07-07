@@ -20,7 +20,7 @@
         <div class="col-md-6">
         <h5 class="card-title">Course: @ViewData["CourseTitle"]</h5>
 
-        <form asp-action="CreateSections" enctype="multipart/form-data">
+                <form asp-action="CreateSections" asp-route-courseId="@ViewData["CourseId"]" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="CourseId" />
             <div class="form-group">
@@ -33,8 +33,19 @@
                         <textarea asp-for="Description" class="form-control" style="background-color: white; border: 1px solid black; border-radius: 0; width: 100%; height:200px;resize: none;" maxlength="5000"></textarea>
                  <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+                    <div class="form-group">
+                        <label asp-for="SectionLevel" class="control-label">Section Level</label>
+                        <select asp-for="SectionLevel" class="form-control">
+                            <option value="basic">Basic</option>
+                            <option value="-basic">Easier</option>
+                            <option value="medium">Medium</option>
+                            <option value="medium+">More advanced than medium</option>
+                            <option value="advanced">Very advanced</option>
+                        </select>
+                        <span asp-validation-for="SectionLevel" class="text-danger"></span>
+                    </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                        <button type="submit" class="btn btn-primary">Create</button>
             </div>
         </form>
     </div>

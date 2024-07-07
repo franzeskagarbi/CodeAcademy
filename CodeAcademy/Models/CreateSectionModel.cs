@@ -6,6 +6,8 @@
         public string CourseTitle { get; set; }
         public string SectionName { get; set; }
         public string Description { get; set; }
+        public string SectionLevel { get; set; }
+
     }
 
 }

@@ -26,6 +26,11 @@ public partial class CourseSection
     [Unicode(false)]
     public string Description { get; set; } = null!;
 
+    [Column("section_level")]
+    [StringLength(50)]
+    [Unicode(false)]
+    public string SectionLevel { get; set; } = null!;
+
     [ForeignKey("CourseId")]
     [InverseProperty("CourseSections")]
     public virtual Course Course { get; set; } = null!;

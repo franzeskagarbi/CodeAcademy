@@ -53,7 +53,9 @@ namespace CodeAcademy.Controllers
                         CourseId = courseId,
                         SectionId = GenerateUniqueSectionId(),
                         SectionName = createSection.SectionName,
-                        Description = createSection.Description
+                        Description = createSection.Description,
+                        SectionLevel = createSection.SectionLevel
+
                     };
 
                     _context.CourseSections.Add(sectionEntity);
@@ -141,7 +143,7 @@ namespace CodeAcademy.Controllers
         // POST: Sections/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditSections(int id, [Bind("SectionId,CourseId,SectionName,Description")] CourseSection section)
+        public async Task<IActionResult> EditSections(int id, [Bind("SectionId,CourseId,SectionName,Description,SectionLevel")] CourseSection section)
         {
             if (id != section.SectionId)
             {
