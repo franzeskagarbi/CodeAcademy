@@ -4,19 +4,29 @@
     ViewData["Title"] = "Create Quiz";
 }
 
-<h2>Create Quiz</h2>
 
-<form asp-action="CreateQuiz" method="post">
-    <input type="hidden" asp-for="SectionId" />
-    <div class="form-group">
-        <label asp-for="QuizName" class="control-label"></label>
-        <input asp-for="QuizName" class="form-control" />
-        <span asp-validation-for="QuizName" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Create</button>
-    </div>
-</form>
+<body style="background-color: #ccffee;">
+    <div class="container">
+        <br />
+        <h2 class="text-center" style="font-size: 2rem;">Create Quiz</h2>
+        <br />
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form asp-action="CreateQuiz" method="post">
+                    <input type="hidden" asp-for="SectionId" />
+                    <div class="form-group">
+                        <label asp-for="QuizName" class="control-label"></label>
+                        <input asp-for="QuizName" class="form-control" />
+                        <span asp-validation-for="QuizName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+            </div>
+            </div>
+</body>
 
 @section Scripts {
     @{
