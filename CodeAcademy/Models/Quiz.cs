@@ -24,6 +24,9 @@ public partial class Quiz
     [Column("total_points")]
     public int TotalPoints { get; set; }
 
+    [Column("isFinal")]
+    public bool IsFinal { get; set; } = false; //default to false for regular quizzes
+
     [InverseProperty("Quiz")]
     public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();
 

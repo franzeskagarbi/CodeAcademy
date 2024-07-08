@@ -97,8 +97,10 @@ namespace CodeAcademy.Controllers
         {
             ViewBag.CourseId = courseId;
 
-            var course = await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == courseId);
-            if (course == null)
+            var course = await _context.Courses
+                    .Include(c => c.CourseSections)
+                        .ThenInclude(s => s.Quizzes)
+                    .FirstOrDefaultAsync(c => c.CourseId == courseId); if (course == null)
             {
                 return NotFound();
             }
@@ -122,6 +124,13 @@ namespace CodeAcademy.Controllers
 
              return newId;
         }
+
+        [HttpGet]
+        public IActionResult Guidelines()
+        {
+            return View();
+        }
+
         // GET: Sections/Edit/
         public async Task<IActionResult> EditSections(int? id, int courseId)
         {

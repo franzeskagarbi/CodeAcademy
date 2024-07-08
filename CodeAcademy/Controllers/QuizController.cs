@@ -41,49 +41,81 @@ namespace CodeAcademy.Controllers
             }
         }
 
-        // POST: Quiz/CreateQuiz
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateQuiz(int sectionId, string quizName, int totalPoints)
         {
             try
             {
-                // Check if the quiz already exists for the section
-                var existingQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.SectionId == sectionId );
-                if (existingQuiz == null)
+                // Check if the section name is "Final"
+                var sectionName = await _context.CourseSections
+                    .Where(s => s.SectionId == sectionId)
+                    .Select(s => s.SectionName)
+                    .FirstOrDefaultAsync();
+
+                if (sectionName != null && sectionName.Equals("Final", StringComparison.OrdinalIgnoreCase))
                 {
                     // Generate a unique quizId
                     var quizId = GenerateUniqueQuizId();
 
-                // Create the new quiz
-                var quiz = new Quiz
+                    // Create the final quiz
+                    var finalQuiz = new Quiz
+                    {
+                        QuizId = quizId,
+                        SectionId = sectionId,
+                        QuizName = "Final Quiz",
+                        TotalPoints = 0,
+                        IsFinal = true
+                    };
+
+                    // Add final quiz to context
+                    _context.Quizzes.Add(finalQuiz);
+                    await _context.SaveChangesAsync();
+
+                    // Generate or update questions for the final quiz
+                    var courseId = GetCourseIdForSection(sectionId);
+                    await GenerateOrUpdateFinalQuiz(courseId);
+
+                    TempData["SuccessMessage"] = "Final Quiz created successfully.";
+                    return RedirectToAction("ViewQuestions", new { quizId = quizId });
+                }
+                else
                 {
-                    QuizId = quizId,
-                    SectionId = sectionId,
-                    QuizName = quizName,
-                    TotalPoints = 0
-                };
+                    // Create a regular quiz
+                    var existingQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.SectionId == sectionId);
+                    if (existingQuiz == null)
+                    {
+                        var quizId = GenerateUniqueQuizId();
+                        var quiz = new Quiz
+                        {
+                            QuizId = quizId,
+                            SectionId = sectionId,
+                            QuizName = quizName,
+                            TotalPoints = 0,
+                            IsFinal = false
+                        };
 
-                _context.Quizzes.Add(quiz);
-                await _context.SaveChangesAsync();
+                        _context.Quizzes.Add(quiz);
+                        await _context.SaveChangesAsync();
 
-                await UpdateQuizTotalPoints(quizId);
+                        await UpdateQuizTotalPoints(quizId);
 
-                TempData["SuccessMessage"] = "Quiz created successfully.";
-                return RedirectToAction("ViewQuestions", new { quizId = quizId });
-
-                }       
-
+                        TempData["SuccessMessage"] = "Quiz created successfully.";
+                        return RedirectToAction("ViewQuestions", new { quizId = quizId });
+                    }
+                }
             }
             catch (Exception ex)
             {
-                // Handle exceptions
                 Console.WriteLine($"Error creating quiz: {ex.Message}");
                 TempData["ErrorMessage"] = "An error occurred while creating the quiz. Please try again later.";
-                return RedirectToAction("CreateQuiz", new { sectionId = sectionId });
             }
+
             return RedirectToAction("CreateQuiz", new { sectionId = sectionId });
         }
+
+
+
 
         //helper method
         private async Task UpdateQuizTotalPoints(int quizId)
@@ -98,6 +130,136 @@ namespace CodeAcademy.Controllers
                 quiz.TotalPoints = totalPoints;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        private async Task GenerateOrUpdateFinalQuiz(int courseId)
+        {
+            // Get the sectionId for the section named "Final"
+            var finalSectionId = await _context.CourseSections
+                .Where(s => s.CourseId == courseId && s.SectionName == "Final")
+                .Select(s => s.SectionId)
+                .FirstOrDefaultAsync();
+
+            if (finalSectionId == 0)
+            {
+                Console.WriteLine("Section 'Final' not found for courseId: " + courseId);
+                return;
+            }
+
+            // Check if a final quiz already exists for the course and section
+            var existingFinalQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.SectionId == finalSectionId && q.IsFinal);
+
+            if (existingFinalQuiz == null)
+            {
+                // Generate the final quiz
+                var finalQuiz = new Quiz
+                {
+                    QuizId = GenerateUniqueQuizId(),
+                    SectionId = finalSectionId,
+                    QuizName = "Final Quiz",
+                    IsFinal = true
+                };
+
+                var totalPoints = await CalculateTotalPointsForFinalQuiz(courseId);
+                finalQuiz.TotalPoints = totalPoints;
+
+                _context.Quizzes.Add(finalQuiz);
+                await _context.SaveChangesAsync();
+
+                await AddQuestionsFromRegularQuizzesToFinalQuiz(courseId, finalQuiz.QuizId);
+            }
+            else
+            {
+                var totalPoints = await CalculateTotalPointsForFinalQuiz(courseId);
+                existingFinalQuiz.TotalPoints = totalPoints;
+                await _context.SaveChangesAsync();
+
+                await UpdateQuestionsInFinalQuiz(existingFinalQuiz.QuizId, courseId);
+            }
+        }
+
+
+        private async Task AddQuestionsFromRegularQuizzesToFinalQuiz(int courseId, int finalQuizId)
+        {
+            // Query all regular quizzes for the course
+            var regularQuizzes = await _context.Quizzes
+                .Where(q => q.Section.CourseId == courseId && !q.IsFinal)
+                .Include(q => q.Questions)
+                    .ThenInclude(q => q.Answers) // Include answers for each question
+                .ToListAsync();
+
+            foreach (var regularQuiz in regularQuizzes)
+            {
+                // Add each question from the regular quiz to the final quiz
+                foreach (var question in regularQuiz.Questions)
+                {
+                    var newQuestion = new Question
+                    {
+                        // Assign a new questionId for the final quiz
+                        QuestionId = GenerateUniqueQuizId(), // Adjust as needed
+                        QuizId = finalQuizId,
+                        QuestionText = question.QuestionText,
+                        Points = question.Points
+                        // Copy other properties as needed
+                    };
+
+                    _context.Questions.Add(newQuestion);
+
+                    // Add answers for the current question to the final quiz question
+                    foreach (var answer in question.Answers)
+                    {
+                        var newAnswer = new Answer
+                        {
+                            // Assign a new answerId for the final quiz
+                            AnswerId = GenerateUniqueAnswerId(), // Generate unique answerId
+                            QuestionId = newQuestion.QuestionId, // Assign the new questionId
+                            Answer1 = answer.Answer1,
+                            IsCorrect = answer.IsCorrect
+                            // Copy other properties as needed
+                        };
+
+                        _context.Answers.Add(newAnswer);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Helper method to generate unique answerId
+        private int GenerateUniqueAnswerId()
+        {
+            // Implement your logic to generate a unique answerId here
+            // Example: You can use GUIDs or a sequence generator
+            // For simplicity, let's assume it generates unique integer IDs
+            return Guid.NewGuid().GetHashCode(); // Example; adjust as needed
+        }
+
+
+        private async Task UpdateQuestionsInFinalQuiz(int finalQuizId, int courseId)
+        {
+            // Remove existing questions in the final quiz
+            var existingQuestions = await _context.Questions
+                .Where(q => q.QuizId == finalQuizId)
+                .ToListAsync();
+
+            _context.Questions.RemoveRange(existingQuestions);
+
+            // Add questions from all regular quizzes for the course to the final quiz
+            await AddQuestionsFromRegularQuizzesToFinalQuiz(courseId, finalQuizId);
+        }
+
+        private async Task<int> CalculateTotalPointsForFinalQuiz(int courseId)
+        {
+            // Query all regular quizzes for the course
+            var regularQuizzes = await _context.Quizzes
+                .Where(q => q.Section.CourseId == courseId && !q.IsFinal)
+                .ToListAsync();
+
+            // Calculate total points by summing up points from all regular quizzes
+            var totalPoints = regularQuizzes.Sum(q => q.TotalPoints);
+
+            return totalPoints;
         }
 
         [HttpGet]

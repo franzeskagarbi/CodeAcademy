@@ -46,6 +46,12 @@
         padding-left: 20px;
         border-left: 1px solid #ccc;
     }
+
+    .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
 
 
@@ -64,6 +70,8 @@
             <div id="sectionsContainer">
                 @foreach (var item in Model.OrderBy(s => s.SectionName))
                 {
+                    //var quiz = item.Quizzes?.FirstOrDefault(q => q.SectionId == item.SectionId);
+
                     <div class="col-md-4 section" style="display: none;">
                         <div class="row justify-content-center">
                             <div class="card-body">
@@ -71,7 +79,17 @@
                                 <p class="card-text" style="white-space:pre-line">@Html.DisplayFor(modelItem => item.Description)</p>
 
                                 <br />
-                                <a class="btn btn-primary " href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Quiz</a>
+                                <!--<a class="btn btn-primary " href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Quiz</a> -->
+                                
+                                @if (item.SectionName.ToLower().Contains("final"))
+                                {
+                                    <a class="btn btn-success" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Final Quiz</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-primary" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Quiz</a>
+                                }
+                                
                             </div>
                         </div>
                     </div>
@@ -82,8 +100,10 @@
     <br />
     <br />
     <br />
-    <div class="text-center mt-4">
+    <div class="text-center mt-4 center">
         <button id="nextButton" class="btn btn-primary">Next Section</button>
+        <!--<button id="finalQuizButton" class="btn btn-success" style="display: none;" onclick="location.href='@Url.Action("FinalQuiz", "Quiz", new { courseId = courseId })'">Final Quiz</button>-->
+
     </div>
 }
 else
@@ -111,10 +131,21 @@ else
 
                 if (currentIndex === sections.length - 1) {
                     document.getElementById("nextButton").style.display = "none"; // Hide next button on last section
+                    //document.getElementById("finalQuizButton").style.display = "block"; // Show final quiz button on last section
+
                 }
+
+                if (currentIndex === sections.length) {
+                    document.getElementById("nextButton").style.display = "none"; // Hide next button on last section
+                    //document.getElementById("finalQuizButton").style.display = "block"; // Show final quiz button on last section
+                }
+                // Debugging: Log currentIndex and sections length
+                console.log("Current Index:", currentIndex);
+                console.log("Sections Length:", sections.length);
             }
 
             document.getElementById("nextButton").addEventListener("click", showNextSection);
+
 
             // Initially show the first section
             if (sections.length > 0) {
@@ -124,7 +155,11 @@ else
             // Hide next button if there's only one section
             if (sections.length <= 1) {
                 document.getElementById("nextButton").style.display = "none";
+                //document.getElementById("finalQuizButton").style.display = "block";
+
             }
+            console.log("Initial Sections Length:", sections.length);
+
         });
 
         //function to stop showing the message after redirecting to the page
