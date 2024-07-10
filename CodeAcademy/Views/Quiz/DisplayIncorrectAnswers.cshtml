@@ -1,0 +1,100 @@
+﻿@model DisplayIncorrectAnswersViewModel
+@{
+    
+}
+<style>
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+    .quiz-container {
+        display: flex;
+        flex-wrap: wrap; /* Allow items to wrap to the next row */
+        justify-content: space-around; /* Distribute items with space around them */
+        align-items: flex-start; /* Align items to the top of the container */
+        padding: 20px; /* Add padding around the quiz container */
+    }
+
+    .answer-container {
+        width: calc(50% - 20px); /* Set width to half of the container minus some margin */
+        margin: 10px; /* Add margin around each answer container */
+        border: 1px solid #eee; /* Add a border around each answer container */
+        padding: 10px; /* Add padding inside each answer container */
+        text-align: left; /* Align text content to the left */
+        box-sizing: border-box; /* Include border and padding in the width calculation */
+    }
+
+        .answer-container h4 {
+            margin-bottom: 5px;
+        }
+
+        .answer-container p {
+            margin: 5px 0;
+        }
+
+    .answer-options {
+        margin-top: 10px;
+    }
+
+        .answer-options li {
+            color: black; /* Default color */
+        }
+
+        .answer-options .correct {
+            color: green; /* Green color for correct answers */
+        }
+
+        .answer-options .selected {
+            color: red; /* Red color for selected answers */
+        }
+
+    .submit-btn {
+        margin-top: 20px;
+    }
+</style>
+<h2>Incorrect Answers</h2>
+<div class="quiz-container">
+    @foreach (var incorrectAnswer in Model.IncorrectAnswers)
+    {
+        <div class="answer-container">
+            <h4>Question: @incorrectAnswer.QuestionText</h4>
+            <p>Selected Answer: @incorrectAnswer.SelectedAnswerText</p>
+            <p>Correct Answer: @incorrectAnswer.CorrectAnswerText</p>
+
+            <h5>Other Options:</h5>
+            <ul class="answer-options">
+                @foreach (var option in incorrectAnswer.AnswerOptions)
+                {
+                    <li class="@(option.IsCorrect ? "correct" : "")">@option.AnswerText</li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@if (Model.TotalScore > 90) // advanced
+{
+    <p>Congratulations! Your score is @Model.TotalScore. You can access the advanced learning path.</p>
+    <a class="btn btn-primary" href="@Url.Action("AdvancedLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">Advanced Learning Path</a>
+}
+else if (Model.TotalScore >= 50 && Model.TotalScore < 90) //medium+
+{
+    <p>Your score is @Model.TotalScore. You can access a bit more advanced content, to get more knowledge on the subject!</p>
+    <a class="btn btn-primary" href="@Url.Action("MediumPlusLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">A bit more advanced Learning Path</a>
+}
+else if (Model.TotalScore >= 10 && Model.TotalScore < 50) //medium
+{
+    <p>Your score is @Model.TotalScore. You can continue with medium difficulty level, here.</p>
+    <a class="btn btn-primary" href="@Url.Action("MediumLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">Medium Learning Path</a>
+}
+else if (Model.TotalScore < 10) //basic
+{
+    <p>Your score is @Model.TotalScore. Please read some less complex matters as an introduction and try again from the beginning!</p>
+    <a class="btn btn-primary" href="@Url.Action("BasicMinusLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">More Basic Learning Path</a>
+}
+

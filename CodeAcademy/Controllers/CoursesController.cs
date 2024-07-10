@@ -9,6 +9,7 @@ using CodeAcademy.Models;
 using System.Security.Claims;
 using CodeAcademy.ViewModels;
 using static System.Collections.Specialized.BitVector32;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace CodeAcademy.Controllers
 {
@@ -295,6 +296,7 @@ namespace CodeAcademy.Controllers
                 .Where(q => sections.Select(s => s.SectionId).Contains(q.SectionId))
                 .ToListAsync();
 
+            var quizzesList = quizzes.AsEnumerable();
             // Εύρεση των ερωτήσεων που ανήκουν στα quiz
             var questionIds = quizzes.SelectMany(q => q.Questions.Select(qu => qu.QuestionId)).ToList();
 
@@ -302,6 +304,14 @@ namespace CodeAcademy.Controllers
             var answers = await _context.Answers
                 .Where(a => questionIds.Contains(a.QuestionId))
                 .ToListAsync();
+
+            // Find all student_answers related to these quizzes
+            var studentAnswers = await _context.StudentAnswers
+            .Where(sa => quizzesList.Any(q => q.QuizId == sa.QuizId))
+            .ToListAsync();
+
+            // Remove all student_answers
+            _context.StudentAnswers.RemoveRange(studentAnswers);
 
             // Αφαίρεση όλων των απαντήσεων
             _context.Answers.RemoveRange(answers);
@@ -395,18 +405,7 @@ namespace CodeAcademy.Controllers
                     // Assuming GetNextCourseId() retrieves the next available id for the relationship
                     var courseId = GetNextCourseId();
 
-                    // Loop through sorted sections and add to CourseHasStudents
-                    /*foreach (var section in sections)
-                    {
-                        var courseHasStudent = new CourseHasStudent
-                        {
-                            CourseId = id,
-                            StudentId = Int32.Parse(userId),
-                            Id = courseId
-                        };
-
-                        _context.CourseHasStudents.Add(courseHasStudent);
-                    } */
+                    
                     var courseHasStudent = new CourseHasStudent
                     {
                         CourseId = id,
@@ -436,7 +435,7 @@ namespace CodeAcademy.Controllers
         }
 
         // GET: Courses/CourseMainPage/id
-        public async Task<IActionResult> CourseMainPage(int id)
+        public async Task<IActionResult> CourseMainPage(int id, int totalScore)
         {
             var course = await _context.Courses
                 .Include(c => c.CourseSections)
@@ -447,18 +446,45 @@ namespace CodeAcademy.Controllers
                 return NotFound();
             }
 
-            var sections = await _context.CourseSections
-                .Where(s => s.CourseId == id)
-                .ToListAsync();
+            List<CourseSection> sections;
+
+            if (totalScore == 0)
+            {
+                sections = await _context.CourseSections
+                    .Where(s => s.CourseId == id && s.SectionLevel == "basic")
+                    .ToListAsync();
+            }
+            else if (totalScore < 10)
+            {
+                sections = await _context.CourseSections
+                    .Where(s => s.CourseId == id && s.SectionLevel == "-basic")
+                    .ToListAsync();
+            }
+            else if (totalScore >= 10 && totalScore < 50)
+            {
+                sections = await _context.CourseSections
+                    .Where(s => s.CourseId == id && s.SectionLevel == "medium")
+                    .ToListAsync();
+            }
+            else if (totalScore >= 50 && totalScore < 90)
+            {
+                sections = await _context.CourseSections
+                    .Where(s => s.CourseId == id && s.SectionLevel == "medium+")
+                    .ToListAsync();
+            }
+            else // totalScore >= 90
+            {
+                sections = await _context.CourseSections
+                    .Where(s => s.CourseId == id && s.SectionLevel == "advanced")
+                    .ToListAsync();
+            }
 
             ViewBag.CourseTitle = course.Title;
             ViewBag.CourseId = course.CourseId;
+            ViewBag.TotalScore = totalScore;
 
             return View(sections);
         }
-
-
-
 
         // Helper method to get the next available course ID
         private int GetNextCourseId()
@@ -466,8 +492,10 @@ namespace CodeAcademy.Controllers
             int nextId = _context.CourseHasStudents.Max(p => (int?)p.Id) ?? 0;
             return nextId + 1;
         }
-        }
+
+        
+
+    }
 
 
-    
 }

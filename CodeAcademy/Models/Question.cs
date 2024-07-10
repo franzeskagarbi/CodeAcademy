@@ -31,6 +31,6 @@ public partial class Question
     public virtual Quiz Quiz { get; set; } = null!;
     [Column("points")]
     public int Points { get; set; }
-
+    public ICollection<StudentAnswer> StudentAnswers { get; set; }
 
 }

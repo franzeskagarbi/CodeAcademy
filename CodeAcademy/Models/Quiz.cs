@@ -36,4 +36,5 @@ public partial class Quiz
     [ForeignKey("SectionId")]
     [InverseProperty("Quizzes")]
     public virtual CourseSection Section { get; set; } = null!;
+    public ICollection<StudentAnswer> StudentAnswers { get; set; }
 }

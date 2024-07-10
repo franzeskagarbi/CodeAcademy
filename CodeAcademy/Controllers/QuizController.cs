@@ -542,25 +542,11 @@ namespace CodeAcademy.Controllers
                 return NotFound();
             }
 
+            // check if the quiz is a final quiz
+            bool isFinalQuiz = quiz.IsFinal;
+
             // Calculate total score
             int totalScore = 0;
-            foreach (var answer in answers)
-            {
-                // Find the question in the quiz
-                var question = quiz.Questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
-                if (question != null)
-                {
-
-                    // Find the correct answer for the question
-                    var correctAnswer = question.Answers.FirstOrDefault(a => a.IsCorrect == 1);
-                    if (correctAnswer != null && correctAnswer.AnswerId == answer.SelectedAnswerId)
-                    {
-                        totalScore += question.Points;
-                    }
-                }
-            }
-
-            // Save or update grade
             string currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(currentUserId, out int userIdInt))
             {
@@ -572,6 +558,55 @@ namespace CodeAcademy.Controllers
             {
                 return RedirectToAction("Error");
             }
+
+            List<StudentAnswer> studentAnswers = new List<StudentAnswer>();
+
+
+            foreach (var answer in answers)
+            {
+                // Find the question in the quiz
+                var question = quiz.Questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
+
+                if (question != null)
+                {
+
+                    // Find the correct answer for the question
+                    var correctAnswer = question.Answers.FirstOrDefault(a => a.IsCorrect == 1);
+                    bool isCorrect = correctAnswer != null && correctAnswer.AnswerId == answer.SelectedAnswerId;
+
+                    if (isCorrect)
+                    {
+                        totalScore += question.Points;
+                    }
+                    
+                    // Add to studentAnswers list only if it's the final quiz
+                    if (isFinalQuiz)
+                    {
+                        studentAnswers.Add(new StudentAnswer
+                        {
+                            AnswerId = GenerateStudentAnswerId(),
+                            StudentId = student.UserId,
+                            QuizId = QuizId,
+                            QuestionId = answer.QuestionId,
+                            ChosenAnswerId = answer.SelectedAnswerId,
+                            IsCorrect = isCorrect
+                        });
+                    }
+                }
+            }
+
+            // Save or update grade
+            //string currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            /*if (!int.TryParse(currentUserId, out int userIdInt))
+            {
+                return RedirectToAction("Error");
+            }
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == userIdInt);
+            if (student == null)
+            {
+                return RedirectToAction("Error");
+            }*/
 
             var existingGrade = await _context.Grades.FirstOrDefaultAsync(g => g.StudentId == student.UserId && g.QuizId == QuizId);
 
@@ -592,6 +627,10 @@ namespace CodeAcademy.Controllers
                 _context.Grades.Add(newGrade);
             }
 
+            ViewBag.TotalScore = totalScore;
+            ViewBag.StudentId = student.UserId;
+
+            
             await _context.SaveChangesAsync();
             // Fetch course and section IDs based on QuizId
             var quizInfo = await _context.Quizzes
@@ -606,12 +645,121 @@ namespace CodeAcademy.Controllers
                 TempData["ErrorMessage"] = "No quiz is set for this course."; // Handle case where quizId doesn't exist or isn't associated correctly
             }
 
+            // Add student answers to the database
+            if (isFinalQuiz)
+            {
+                _context.StudentAnswers.AddRange(studentAnswers);
+                await _context.SaveChangesAsync();
+
+                // Redirect to view showing incorrect answers
+                return RedirectToAction("DisplayIncorrectAnswers", new { quizId = QuizId });
+            }
+
+
             int courseId = quizInfo.CourseId;
             int sectionId = quizInfo.SectionId;
+                    
 
             return RedirectToAction("CourseMainPage", "Courses", new { id = courseId });
         }
 
+        private int GenerateStudentAnswerId()
+        {
+            int newId;
+            do
+            {
+                newId = new Random().Next(1, int.MaxValue);
+            } while (_context.StudentAnswers.Any(s => s.AnswerId == newId));
+
+            return newId;
+        }
+
+        public async Task<IActionResult> DisplayIncorrectAnswers(int quizId)
+        {
+            var studentId = GetStudentId(); // Replace with your method to get the current student's ID
+
+            // Fetch the grade for the current student and quiz
+            var grade = await _context.Grades.FirstOrDefaultAsync(g => g.StudentId == studentId && g.QuizId == quizId);
+
+            var totalScore = grade?.Score ?? 0;
+
+            var incorrectAnswers = await _context.StudentAnswers
+                .Where(sa => sa.QuizId == quizId && sa.StudentId == studentId && sa.IsCorrect == false)
+                .Include(sa => sa.Question)
+                .ThenInclude(q => q.Answers)
+                .Select(sa => new
+                {
+                    sa.QuestionId,
+                    sa.Question.QuestionText,
+                    sa.ChosenAnswer.Answer1,
+                    sa.Question.Answers
+                })
+                .ToListAsync();
+
+            var incorrectAnswerViewModels = incorrectAnswers.Select(sa => new IncorrectAnswerViewModel
+            {
+                QuestionId = sa.QuestionId ?? 0,
+                QuestionText = sa.QuestionText,
+                SelectedAnswerText = sa.Answer1,
+                CorrectAnswerText = sa.Answers.FirstOrDefault(a => a.IsCorrect == 1)?.Answer1,
+                AnswerOptions = sa.Answers.Select(a => new AnswerViewModel
+                {
+                    AnswerId = a.AnswerId,
+                    AnswerText = a.Answer1,
+                    IsCorrect = a.IsCorrect == 1
+                }).ToList()
+            }).ToList();
+
+            var quizInfo = await _context.Quizzes
+                .Include(q => q.Section) // Assuming Quiz has a navigation property to Section
+                .ThenInclude(s => s.Course) // Assuming Section has a navigation property to Course
+                .Where(q => q.QuizId == quizId)
+                .Select(q => new { CourseId = q.Section.Course.CourseId, SectionId = q.Section.SectionId })
+                .FirstOrDefaultAsync();
+
+            if (quizInfo == null)
+            {
+                TempData["ErrorMessage"] = "No quiz is set for this course."; // Handle case where quizId doesn't exist or isn't associated correctly
+                return RedirectToAction("Index", "Home"); // Or handle it as appropriate
+            }
+
+            var viewModel = new DisplayIncorrectAnswersViewModel
+            {
+                IncorrectAnswers = incorrectAnswerViewModels,
+                TotalScore = totalScore,
+                CourseId = quizInfo.CourseId
+            };
+
+            return View(viewModel);
+        }
+
+
+        private int GetStudentId()
+        {
+            // Get the current user's identity
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+            {
+                // You can further query the database or use the ID directly based on your context
+                // Example: Fetch the student ID from your database based on the userId
+                var student = _context.Students.FirstOrDefault(s => s.UserId == userId);
+
+                if (student != null)
+                {
+                    return student.UserId; // Assuming StudentId is the primary key for Student
+                }
+            }
+
+            // Handle cases where user ID claim is not found or student is not found
+            // You might want to throw an exception or handle this scenario based on your application's requirements
+            throw new ApplicationException("Student ID not found for the current user.");
+        }
+
 
     }
+
+
+
+
 }

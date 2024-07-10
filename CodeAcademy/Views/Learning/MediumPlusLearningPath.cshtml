@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Medium Learning Path";
+}
+
+<h2>Medium Plus Learning Path</h2>
+<p>Congratulations! You can access a bit more advanced content, to get more knowledge on the subject!</p>
+@model List<CodeAcademy.Models.CourseSection>
+
+@{
+    ViewData["Title"] = "View Sections";
+    string courseTitle = ViewData["CourseTitle"]?.ToString();
+    int courseId = ViewData["CourseId"] != null ? (int)ViewData["CourseId"] : 0;
+}
+
+<h1 class="display-4">Sections: @courseTitle</h1>
+
+@if (Model.Any())
+{
+    <div class="content">
+        <div class="row justify-content-center">
+            <div id="sectionsContainer">
+                @foreach (var item in Model.OrderBy(s => s.SectionName))
+                {
+                    <div class="col-md-4 section">
+                        <div class="row justify-content-center">
+                            <div class="card-body">
+                                <h5 class="card-title">@Html.DisplayFor(modelItem => item.SectionName)</h5>
+                                <p class="card-text" style="white-space:pre-line">@Html.DisplayFor(modelItem => item.Description)</p>
+
+                                @if (item.SectionName.ToLower().Contains("final"))
+                                {
+                                    <a class="btn btn-success" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Final Quiz</a>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-primary" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Quiz</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p>No sections available for this course yet.</p>
+}
+
+<br />
+<br />
+<br />
+<br />
+<br />
+
+@section Scripts {
+    <script>
+        // Your existing script to handle section display logic
+    </script>
+}
+

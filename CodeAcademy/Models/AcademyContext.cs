@@ -16,7 +16,7 @@ public partial class AcademyContext : DbContext
     }
 
     public virtual DbSet<Administrator> Administrators { get; set; }
-
+    public DbSet<StudentAnswer> StudentAnswers { get; set; }
     public virtual DbSet<Answer> Answers { get; set; }
 
     public virtual DbSet<Course> Courses { get; set; }
@@ -60,6 +60,42 @@ public partial class AcademyContext : DbContext
             entity.HasOne(d => d.Question).WithMany(p => p.Answers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_answers_questions");
+        });
+
+        modelBuilder.Entity<StudentAnswer>(entity =>
+        {
+            entity.ToTable("student_answers"); // Specify the table name in the database
+
+            entity.HasKey(e => e.AnswerId).HasName("PK_student_answers"); // Primary key
+
+            // Configure other columns and relationships
+            entity.Property(e => e.AnswerId).HasColumnName("answerId");
+            entity.Property(e => e.StudentId).HasColumnName("studentId");
+            entity.Property(e => e.QuizId).HasColumnName("quizId");
+            entity.Property(e => e.QuestionId).HasColumnName("questionId");
+            entity.Property(e => e.ChosenAnswerId).HasColumnName("chosen_answer_id");
+            entity.Property(e => e.IsCorrect).HasColumnName("is_correct");
+
+            // Relationships
+            entity.HasOne(d => d.ChosenAnswer)
+                  .WithMany() // Assuming no navigation property back to StudentAnswer from Answer
+                  .HasForeignKey(d => d.ChosenAnswerId)
+                  .HasConstraintName("FK_student_answers_q_answers");
+
+            entity.HasOne(d => d.Question)
+                  .WithMany(q => q.StudentAnswers) // Assuming Question has a navigation property to StudentAnswer
+                  .HasForeignKey(d => d.QuestionId)
+                  .HasConstraintName("FK_student_answers_questions");
+
+            entity.HasOne(d => d.Quiz)
+                  .WithMany(q => q.StudentAnswers) // Assuming Quiz has a navigation property to StudentAnswer
+                  .HasForeignKey(d => d.QuizId)
+                  .HasConstraintName("FK_student_answers_quiz");
+
+            entity.HasOne(d => d.Student)
+                  .WithMany(s => s.StudentAnswers) // Assuming Student has a navigation property to StudentAnswer
+                  .HasForeignKey(d => d.StudentId)
+                  .HasConstraintName("FK_student_answers_student");
         });
 
         modelBuilder.Entity<Course>(entity =>

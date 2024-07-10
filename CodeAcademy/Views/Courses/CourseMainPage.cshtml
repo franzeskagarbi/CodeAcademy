@@ -4,6 +4,8 @@
     ViewData["Title"] = "View Sections";
     string courseTitle = ViewData["CourseTitle"]?.ToString();
     int courseId = ViewData["CourseId"] != null ? (int)ViewData["CourseId"] : 0;
+    int totalScore = ViewBag.TotalScore != null ? (int)ViewBag.TotalScore : 0;
+
 }
 @if (TempData["EnrollmentMessage"] != null)
 {

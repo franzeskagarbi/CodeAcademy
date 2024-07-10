@@ -30,4 +30,5 @@ public partial class Student
     [ForeignKey("UserId")]
     [InverseProperty("Student")]
     public virtual User User { get; set; } = null!;
+    public ICollection<StudentAnswer> StudentAnswers { get; set; }
 }
