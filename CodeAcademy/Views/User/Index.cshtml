@@ -5,19 +5,19 @@
     ViewData["Title"] = "Users";
 }
 
-<h1>Users</h1>
+<h1 style="text-align:center">Registered Users On the Platform</h1>
 <p>
-    <a asp-action="Create">Create New</a>
+    <a class="btn btn-primary" asp-action="Create">Create New</a>
 </p>
 <table class="table table-hover">
     <thead>
         <tr>
             <th>
-                Email
+                Username
             </th>
             <th>
-                Password
-            </th>
+                Email
+            </th>            
             <th>
                 Role
             </th>
@@ -29,23 +29,24 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Email)
+                    @Html.DisplayFor(modelItem => item.Username)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Password)
-                </td>
+                    @Html.DisplayFor(modelItem => item.Email)
+                </td>             
                 <td>
                     @Html.DisplayFor(modelItem => item.Role)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Username">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Username">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Username">Delete</a>
+                    <a class="btn btn-info btn-sm" asp-action="Edit" asp-route-id="@item.Username">Edit</a> |
+                    <a class="btn btn-primary btn-sm" asp-action="Details" asp-route-id="@item.Username">Details</a> |
+                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.Username">Delete</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
 <!-- output a paging control that lets the user navigation to the previous page, next page, etc -->
 <nav>
     @Html.PagedListPager(Model, page => Url.Action("index", new { page = page }), new PagedListRenderOptions()
@@ -62,3 +63,4 @@
 
 })
 </nav>
+<br /><br /><br /><br />

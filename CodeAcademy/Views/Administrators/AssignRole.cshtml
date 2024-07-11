@@ -1,10 +1,11 @@
-﻿@model List<CodeAcademy.Models.User>
+﻿@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<CodeAcademy.Models.User>
 
 @{
     ViewData["Title"] = "Assign Roles";
 }
 
-<h2>Assign Roles</h2>
+<h2 class="text-center">Assign Roles</h2>
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -20,41 +21,56 @@
     </div>
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Current Role</th>
-            <th>New Role</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
+<div class="container">
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@user.Username</td>
-                <td>@user.Email</td>
-                <td id="roleTd_@user.Username">@user.Role</td>
-                <td>
-                    <select id="user_NewRole_@user.Username" name="user.NewRole">
-                        <option value="Admin">Admin</option>
-                        <option value="Student">Student</option>
-                        <option value="Teacher">Teacher</option>
-                    </select>
-                </td>
-                <td>
-                    <button type="button" onclick="assignRole('@user.Username')">Assign Role</button>
-                </td>
+                <th scope="col">Username</th>
+                <th scope="col">Email</th>
+                <th scope="col">Current Role</th>
+                <th scope="col">New Role</th>
+                <th scope="col">Action</th>
             </tr>
-        }
-    </tbody>
-</table>
-<br />
-<br />
-<br />
-<br />
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Username</td>
+                    <td>@user.Email</td>
+                    <td id="roleTd_@user.Username">@user.Role</td>
+                    <td>
+                        <select id="user_NewRole_@user.Username" class="form-control">
+                            <option value="Admin">Admin</option>
+                            <option value="Student">Student</option>
+                            <option value="Teacher">Teacher</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="assignRole('@user.Username')">Assign Role</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+<nav>
+    @Html.PagedListPager(Model, page => Url.Action("AssignRole", new { page = page }), new PagedListRenderOptions()
+{
+    ActiveLiElementClass = "active",
+    PageClasses = new[] { "page-link" },
+    LiElementClasses = new[] { "page-item" },
+    UlElementClasses = new[] { "pagination", "justify-content-center", "mt-3" },
+    LinkToNextPageFormat = "Next",
+    LinkToPreviousPageFormat = "Previous",
+    MaximumPageNumbersToDisplay = 5,
+    DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+    DisplayLinkToNextPage = PagedListDisplayMode.Always,
+
+})
+</nav>
+<br /><br /><br /><br /><br />
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
     function assignRole(username) {

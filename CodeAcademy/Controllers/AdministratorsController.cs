@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CodeAcademy.Models;
 using Microsoft.Data.SqlClient;
+using X.PagedList;
 
 namespace CodeAcademy.Controllers
 {
@@ -161,10 +162,16 @@ namespace CodeAcademy.Controllers
             return _context.Administrators.Any(e => e.UserId == id);
         }
         // GET: Admins/AssignRole
-        public IActionResult AssignRole()
+        public async Task<IActionResult> AssignRoleAsync(int? page)
         {
-            var users = _context.Users.ToList();
-            return View(users);
+            var users = await _context.Users.ToListAsync(); // Example query to fetch all users
+
+            int pageNumber = page ?? 1; // If no page number is specified, default to page 1
+            int pageSize = 10; // Number of items per page
+
+            // Convert the list of users to a paged list
+            var pagedUsers = await users.ToPagedListAsync(pageNumber, pageSize);
+            return View(pagedUsers);
         }
 
         // POST: Admins/AssignRole
