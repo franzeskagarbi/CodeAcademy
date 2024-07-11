@@ -78,23 +78,23 @@
 </div>
 <br />
 <br />
-
-@if (Model.TotalScore > 90) // advanced
+<p> Your percentage is @Model.Percentage % and total score is @Model.TotalScore</p>
+@if (Model.Percentage > 90) // advanced
 {
     <p>Congratulations! Your score is @Model.TotalScore. You can access the advanced learning path.</p>
     <a class="btn btn-primary" href="@Url.Action("AdvancedLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">Advanced Learning Path</a>
 }
-else if (Model.TotalScore >= 50 && Model.TotalScore < 90) //medium+
+else if (Model.Percentage >= 50 && Model.Percentage < 90) //medium+
 {
     <p>Your score is @Model.TotalScore. You can access a bit more advanced content, to get more knowledge on the subject!</p>
     <a class="btn btn-primary" href="@Url.Action("MediumPlusLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">A bit more advanced Learning Path</a>
 }
-else if (Model.TotalScore >= 10 && Model.TotalScore < 50) //medium
+else if (Model.Percentage >= 10 && Model.Percentage < 50) //medium
 {
     <p>Your score is @Model.TotalScore. You can continue with medium difficulty level, here.</p>
     <a class="btn btn-primary" href="@Url.Action("MediumLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">Medium Learning Path</a>
 }
-else if (Model.TotalScore < 10) //basic
+else if (Model.Percentage < 10) //basic
 {
     <p>Your score is @Model.TotalScore. Please read some less complex matters as an introduction and try again from the beginning!</p>
     <a class="btn btn-primary" href="@Url.Action("BasicMinusLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">More Basic Learning Path</a>

@@ -103,9 +103,8 @@
     <br />
     <br />
     <div class="text-center mt-4 center">
-        <button id="nextButton" class="btn btn-primary">Next Section</button>
-        <!--<button id="finalQuizButton" class="btn btn-success" style="display: none;" onclick="location.href='@Url.Action("FinalQuiz", "Quiz", new { courseId = courseId })'">Final Quiz</button>-->
-
+        <button id="prevButton" class="btn btn-primary mr-2" style="display: none;">Previous Section</button>
+        <button id="nextButton" class="btn btn-primary ml-2">Next Section</button>
     </div>
 }
 else
@@ -121,47 +120,34 @@ else
             const sections = document.querySelectorAll(".section");
             let currentIndex = 0;
 
-            function showNextSection() {
-                if (currentIndex < sections.length) {
+            function showSection(index) {
+                if (index >= 0 && index < sections.length) {
                     sections[currentIndex].style.display = "none"; // Hide current section
-                    currentIndex++;
-                }
+                    currentIndex = index;
+                    sections[currentIndex].style.display = "block"; // Show selected section
 
-                if (currentIndex < sections.length) {
-                    sections[currentIndex].style.display = "block"; // Show next section
+                    // Toggle visibility of next and previous buttons based on current index
+                    document.getElementById("prevButton").style.display = currentIndex > 0 ? "block" : "none";
+                    document.getElementById("nextButton").style.display = currentIndex < sections.length - 1 ? "block" : "none";
                 }
+            }
 
-                if (currentIndex === sections.length - 1) {
-                    document.getElementById("nextButton").style.display = "none"; // Hide next button on last section
-                    //document.getElementById("finalQuizButton").style.display = "block"; // Show final quiz button on last section
+            function showNextSection() {
+                showSection(currentIndex + 1);
+            }
 
-                }
-
-                if (currentIndex === sections.length) {
-                    document.getElementById("nextButton").style.display = "none"; // Hide next button on last section
-                    //document.getElementById("finalQuizButton").style.display = "block"; // Show final quiz button on last section
-                }
-                // Debugging: Log currentIndex and sections length
-                console.log("Current Index:", currentIndex);
-                console.log("Sections Length:", sections.length);
+            function showPreviousSection() {
+                showSection(currentIndex - 1);
             }
 
             document.getElementById("nextButton").addEventListener("click", showNextSection);
-
+            document.getElementById("prevButton").addEventListener("click", showPreviousSection);
 
             // Initially show the first section
             if (sections.length > 0) {
                 sections[0].style.display = "block";
+                document.getElementById("nextButton").style.display = sections.length > 1 ? "block" : "none";
             }
-
-            // Hide next button if there's only one section
-            if (sections.length <= 1) {
-                document.getElementById("nextButton").style.display = "none";
-                //document.getElementById("finalQuizButton").style.display = "block";
-
-            }
-            console.log("Initial Sections Length:", sections.length);
-
         });
 
         //function to stop showing the message after redirecting to the page

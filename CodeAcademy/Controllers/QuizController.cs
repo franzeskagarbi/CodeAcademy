@@ -595,7 +595,7 @@ namespace CodeAcademy.Controllers
                                .ThenInclude(q => q.Answers)
                                .FirstOrDefault(q => q.SectionId == sectionId);
 
-
+            ViewBag.TotalScore = totalScore;
             if (quiz == null)
             {
                 TempData["ErrorMessage"] = "For now, no quiz is set for this section.";
@@ -641,6 +641,16 @@ namespace CodeAcademy.Controllers
                 // Handle case where no answers were submitted
                 return RedirectToAction("Error");
             }
+            // Fetch section level for the quiz
+            var quizSection = await _context.Quizzes
+                .Include(q => q.Section)
+                .FirstOrDefaultAsync(q => q.QuizId == QuizId);
+
+            if (quizSection == null)
+            {
+                return NotFound();
+            }
+
 
             // Ensure QuizId is valid
             var quiz = await _context.Quizzes
@@ -780,9 +790,24 @@ namespace CodeAcademy.Controllers
 
             int courseId = quizInfo.CourseId;
             int sectionId = quizInfo.SectionId;
-                    
+            var sectionLevel = GetSectionLevel(quizSection.SectionId);
 
-            return RedirectToAction("CourseMainPage", "Courses", new { id = courseId });
+            //return RedirectToAction("CourseMainPage", "Courses", new { id = courseId });
+            switch (sectionLevel.ToLower())
+            {
+                case "medium":
+                    return RedirectToAction("MediumLearningPath", "Learning", new { id = GetCourseIdForSection(quizSection.SectionId), totalScore = totalScore });
+                case "basic":
+                    return RedirectToAction("CourseMainPage", "Courses", new { id = GetCourseIdForSection(quizSection.SectionId), error = true });
+                case "-basic":
+                    return RedirectToAction("BasicMinusLearningPath", "Learning", new { id = GetCourseIdForSection(quizSection.SectionId), totalScore = totalScore });
+                case "medium+":
+                    return RedirectToAction("MediumPlusLearningPath", "Learning", new { id = GetCourseIdForSection(quizSection.SectionId), totalScore = totalScore });
+                case "advanced":
+                    return RedirectToAction("AdvancedLearningPath", "Learning", new { id = GetCourseIdForSection(quizSection.SectionId), totalScore = totalScore });
+                default:
+                    return RedirectToAction("CourseMainPage", "Courses", new { id = GetCourseIdForSection(quizSection.SectionId), error = true });
+            }
         }
 
         private string GetSectionLevel(int sectionId)
@@ -842,8 +867,18 @@ namespace CodeAcademy.Controllers
                 .Include(q => q.Section) // Assuming Quiz has a navigation property to Section
                 .ThenInclude(s => s.Course) // Assuming Section has a navigation property to Course
                 .Where(q => q.QuizId == quizId)
-                .Select(q => new { CourseId = q.Section.Course.CourseId, SectionId = q.Section.SectionId })
+                .Select(q => new {
+                    q.QuizId,
+                    q.TotalPoints,
+                    CourseId = q.Section.Course.CourseId,
+                    SectionId = q.Section.SectionId
+                })
                 .FirstOrDefaultAsync();
+
+            int totalPoints = quizInfo.TotalPoints;
+
+            // Calculate percentage of total score
+            double percentage = (totalScore * 100.0) / totalPoints;
 
             if (quizInfo == null)
             {
@@ -855,10 +890,32 @@ namespace CodeAcademy.Controllers
             {
                 IncorrectAnswers = incorrectAnswerViewModels,
                 TotalScore = totalScore,
+                Percentage = percentage,
                 CourseId = quizInfo.CourseId
             };
-
+            Console.WriteLine(percentage + "%");
             return View(viewModel);
+            // Redirect based on the percentage
+            /*if (percentage >= 90) // advanced
+            {
+                return RedirectToAction("AdvancedLearningPath", "Learning", new { id = quizInfo.CourseId, totalScore = totalScore });
+            }
+            else if (percentage >= 50 && percentage < 90) // medium+
+            {
+                return RedirectToAction("MediumPlusLearningPath", "Learning", new { id = quizInfo.CourseId, totalScore = totalScore });
+            }
+            else if (percentage >= 10 && percentage < 50) // medium
+            {
+                return RedirectToAction("MediumLearningPath", "Learning", new { id = quizInfo.CourseId, totalScore = totalScore });
+            }
+            else if (percentage < 10) // medium
+            {
+                return RedirectToAction("BasicMinusLearningPath", "Learning", new { id = quizInfo.CourseId, totalScore = totalScore });
+            }
+            else // basic
+            {
+                return RedirectToAction("BasicMinusLearningPath", "Learning", new { id = quizInfo.CourseId, totalScore = totalScore });
+            } */
         }
 
 
