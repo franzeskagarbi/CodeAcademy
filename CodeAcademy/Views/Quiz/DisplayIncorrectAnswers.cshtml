@@ -76,6 +76,8 @@
         </div>
     }
 </div>
+<br />
+<br />
 
 @if (Model.TotalScore > 90) // advanced
 {
@@ -97,4 +99,4 @@ else if (Model.TotalScore < 10) //basic
     <p>Your score is @Model.TotalScore. Please read some less complex matters as an introduction and try again from the beginning!</p>
     <a class="btn btn-primary" href="@Url.Action("BasicMinusLearningPath", "Learning", new { id = Model.CourseId, totalScore = Model.TotalScore })">More Basic Learning Path</a>
 }
-
+<br /><br /><br /><br /><br /><br /><br /><br />

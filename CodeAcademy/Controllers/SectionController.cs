@@ -223,25 +223,38 @@ namespace CodeAcademy.Controllers
             var answers = await _context.Answers
                 .Where(a => questionIds.Contains(a.QuestionId))
                 .ToListAsync();
+
+            var quizIds = quizzes.Select(q => q.QuizId).ToList();
+
+            // διαγραφή απαντήσεων 
             _context.Answers.RemoveRange(answers);
 
             // Διαγραφή των ερωτήσεων
             var questions = await _context.Questions
                 .Where(q => questionIds.Contains(q.QuestionId))
                 .ToListAsync();
+
+            // ευρεση student_asnwers που ανηκουν στο quiz που ανηκει στο section που θελουμε να διαγραψουμε
+            var studentAnswers = await _context.StudentAnswers
+                .Where(sa => quizIds.Contains((int)sa.QuizId))
+                .ToListAsync();
+
+            // διαγραφη student answers
+            _context.StudentAnswers.RemoveRange(studentAnswers);
+
             _context.Questions.RemoveRange(questions);
 
             // Διαγραφή των quiz
             _context.Quizzes.RemoveRange(quizzes);
 
             // Εύρεση των βαθμών που σχετίζονται με τα κουίζ της ενότητας
-            var quizIds = quizzes.Select(q => q.QuizId).ToList();
+            //var quizIds = quizzes.Select(q => q.QuizId).ToList();
             var grades = await _context.Grades
                 .Where(g => quizIds.Contains(g.QuizId))
                 .ToListAsync();
             _context.Grades.RemoveRange(grades);
 
-            // Εύρεση της ενότητας
+           // Εύρεση της ενότητας
             var section = await _context.CourseSections.FindAsync(id);
             if (section != null)
             {

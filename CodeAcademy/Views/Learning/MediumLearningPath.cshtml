@@ -56,9 +56,23 @@
     ViewData["Title"] = "View Sections";
     string courseTitle = ViewData["CourseTitle"]?.ToString();
     int courseId = ViewData["CourseId"] != null ? (int)ViewData["CourseId"] : 0;
+    int totalScore = ViewBag.totalScore;
+}
+@if (TempData["EnrollmentMessage"] != null)
+{
+    <div id="enrollmentMessage" class="alert alert-success temp-message">
+        @TempData["EnrollmentMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div id="errorMessage" class="alert alert-danger temp-message">
+        @TempData["ErrorMessage"]
+    </div>
 }
 
 <h1 class="display-4">Sections: @courseTitle</h1>
+<h1 class="display-4">Total Score: @totalScore</h1>
 
 @if (Model.Any())
 {
@@ -75,11 +89,11 @@
 
                                 @if (item.SectionName.ToLower().Contains("final"))
                                 {
-                                    <a class="btn btn-success" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Final Quiz</a>
+                                    <a class="btn btn-success" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId, totalScore = ViewBag.TotalScore })">Final Quiz</a>
                                 }
                                 else
                                 {
-                                    <a class="btn btn-primary" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId })">Quiz</a>
+                                    <a class="btn btn-primary" href="@Url.Action("DoQuiz", "Quiz", new { sectionId = item.SectionId, totalScore = ViewBag.TotalScore })">Quiz</a>
                                 }
                             </div>
                         </div>

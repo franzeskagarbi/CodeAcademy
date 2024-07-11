@@ -100,6 +100,18 @@ namespace CodeAcademy.Controllers
 
                         await UpdateQuizTotalPoints(quizId);
 
+                        // Update the final quiz if the section level is "basic"
+                        var sectionLevel = await _context.CourseSections
+                            .Where(s => s.SectionId == sectionId)
+                            .Select(s => s.SectionLevel)
+                            .FirstOrDefaultAsync();
+
+                        if (sectionLevel == "basic")
+                        {
+                            var courseId = GetCourseIdForSection(sectionId);
+                            await GenerateOrUpdateFinalQuiz(courseId);
+                        }
+
                         TempData["SuccessMessage"] = "Quiz created successfully.";
                         return RedirectToAction("ViewQuestions", new { quizId = quizId });
                     }
@@ -160,21 +172,22 @@ namespace CodeAcademy.Controllers
                     IsFinal = true
                 };
 
+                await AddQuestionsFromRegularQuizzesToFinalQuiz(courseId, finalQuiz.QuizId);
+
                 var totalPoints = await CalculateTotalPointsForFinalQuiz(courseId);
                 finalQuiz.TotalPoints = totalPoints;
 
                 _context.Quizzes.Add(finalQuiz);
                 await _context.SaveChangesAsync();
-
-                await AddQuestionsFromRegularQuizzesToFinalQuiz(courseId, finalQuiz.QuizId);
             }
             else
             {
+                await UpdateQuestionsInFinalQuiz(existingFinalQuiz.QuizId, courseId);
+
                 var totalPoints = await CalculateTotalPointsForFinalQuiz(courseId);
                 existingFinalQuiz.TotalPoints = totalPoints;
-                await _context.SaveChangesAsync();
 
-                await UpdateQuestionsInFinalQuiz(existingFinalQuiz.QuizId, courseId);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -183,7 +196,7 @@ namespace CodeAcademy.Controllers
         {
             // Query all regular quizzes for the course
             var regularQuizzes = await _context.Quizzes
-                .Where(q => q.Section.CourseId == courseId && !q.IsFinal)
+                .Where(q => q.Section.CourseId == courseId && !q.IsFinal && q.Section.SectionLevel == "basic")
                 .Include(q => q.Questions)
                     .ThenInclude(q => q.Answers) // Include answers for each question
                 .ToListAsync();
@@ -200,7 +213,6 @@ namespace CodeAcademy.Controllers
                         QuizId = finalQuizId,
                         QuestionText = question.QuestionText,
                         Points = question.Points
-                        // Copy other properties as needed
                     };
 
                     _context.Questions.Add(newQuestion);
@@ -215,7 +227,6 @@ namespace CodeAcademy.Controllers
                             QuestionId = newQuestion.QuestionId, // Assign the new questionId
                             Answer1 = answer.Answer1,
                             IsCorrect = answer.IsCorrect
-                            // Copy other properties as needed
                         };
 
                         _context.Answers.Add(newAnswer);
@@ -238,22 +249,30 @@ namespace CodeAcademy.Controllers
 
         private async Task UpdateQuestionsInFinalQuiz(int finalQuizId, int courseId)
         {
-            // Remove existing questions in the final quiz
+            // Get the existing questions in the final quiz
             var existingQuestions = await _context.Questions
-                .Where(q => q.QuizId == finalQuizId)
-                .ToListAsync();
+                    .Where(q => q.QuizId == finalQuizId)
+                    .Include(q => q.Answers)
+                    .ToListAsync();
 
+            foreach (var question in existingQuestions)
+            {
+                _context.Answers.RemoveRange(question.Answers);
+            }
             _context.Questions.RemoveRange(existingQuestions);
+
+            await _context.SaveChangesAsync();
 
             // Add questions from all regular quizzes for the course to the final quiz
             await AddQuestionsFromRegularQuizzesToFinalQuiz(courseId, finalQuizId);
         }
 
+
         private async Task<int> CalculateTotalPointsForFinalQuiz(int courseId)
         {
             // Query all regular quizzes for the course
             var regularQuizzes = await _context.Quizzes
-                .Where(q => q.Section.CourseId == courseId && !q.IsFinal)
+                 .Where(q => q.Section.CourseId == courseId && !q.IsFinal && q.Section.SectionLevel == "basic")
                 .ToListAsync();
 
             // Calculate total points by summing up points from all regular quizzes
@@ -331,13 +350,36 @@ namespace CodeAcademy.Controllers
 
                 _context.Questions.Add(question);
                 await _context.SaveChangesAsync();
+                // Get the courseId from the quiz
+                var courseId = await GetCourseIdForQuiz(model.QuizId);
+                await GenerateOrUpdateFinalQuiz(courseId);
 
                 // Update TotalPoints for the quiz after adding a question
                 await UpdateQuizTotalPoints(model.QuizId);
 
+                // Update TotalPoints for the final quiz
+                var finalQuizId = await GetFinalQuizId(courseId);
+                await UpdateQuizTotalPoints(finalQuizId);
+
                 return RedirectToAction("ViewQuestions", new { quizId = model.QuizId });
             }
             return View(model);
+        }
+
+        private async Task<int> GetCourseIdForQuiz(int quizId)
+        {
+            return await _context.Quizzes
+                .Where(q => q.QuizId == quizId)
+                .Select(q => q.Section.CourseId)
+                .FirstOrDefaultAsync();
+        }
+
+        private async Task<int> GetFinalQuizId(int courseId)
+        {
+            return await _context.Quizzes
+                .Where(q => q.Section.CourseId == courseId && q.IsFinal)
+                .Select(q => q.QuizId)
+                .FirstOrDefaultAsync();
         }
 
         // GET: Answer/Create
@@ -446,7 +488,21 @@ namespace CodeAcademy.Controllers
             {
                 return NotFound();
             }
+
             var quizId = question.QuizId;
+
+            // Calculate total points for the quiz after deleting the answer
+            await UpdateQuizTotalPoints(quizId);
+           
+
+            // Get the courseId from the quiz
+            var courseId = await GetCourseIdForQuiz(quizId);
+            // Update TotalPoints for the final quiz
+            var finalQuizId = await GetFinalQuizId(courseId);
+            await UpdateQuizTotalPoints(finalQuizId);
+
+            // Update the final quiz
+            await GenerateOrUpdateFinalQuiz(courseId);
 
             return RedirectToAction("ViewQuestions", new { quizId });
         }
@@ -470,6 +526,15 @@ namespace CodeAcademy.Controllers
             var quizId = question.QuizId;
             // Calculate total points for the quiz after deleting the question
             await UpdateQuizTotalPoints(quizId);
+
+            // Get the courseId from the quiz
+            var courseId = await GetCourseIdForQuiz(quizId);
+            // Update TotalPoints for the final quiz
+            var finalQuizId = await GetFinalQuizId(courseId);
+            await CalculateTotalPointsForFinalQuiz(courseId);
+
+            // Update the final quiz
+            await GenerateOrUpdateFinalQuiz(courseId);
             return RedirectToAction("ViewQuestions", new { quizId});
         }
 
@@ -493,18 +558,64 @@ namespace CodeAcademy.Controllers
             return course;
         }
 
+        private async Task UpdateFinalQuizAfterChange(int courseId, int pointsAdjustment)
+        {
+            // Get the sectionId for the section named "Final"
+            var finalSectionId = await _context.CourseSections
+                .Where(s => s.CourseId == courseId && s.SectionName == "Final")
+                .Select(s => s.SectionId)
+                .FirstOrDefaultAsync();
+
+            if (finalSectionId == 0)
+            {
+                Console.WriteLine("Section 'Final' not found for courseId: " + courseId);
+                return;
+            }
+
+            // Get the final quiz for the course
+            var finalQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.SectionId == finalSectionId && q.IsFinal);
+            if (finalQuiz == null)
+            {
+                Console.WriteLine("Final quiz not found for section: " + finalSectionId);
+                return;
+            }
+
+            // Adjust the total points for the final quiz
+            finalQuiz.TotalPoints += pointsAdjustment;
+
+            await _context.SaveChangesAsync();
+        }
+
+
         // GET: Quiz/DoQuiz/{sectionId}
-        public IActionResult DoQuiz(int sectionId)
+        public IActionResult DoQuiz(int sectionId, int totalScore)
         {
             var quiz = _context.Quizzes
                                .Include(q => q.Questions)
                                .ThenInclude(q => q.Answers)
                                .FirstOrDefault(q => q.SectionId == sectionId);
 
+
             if (quiz == null)
             {
                 TempData["ErrorMessage"] = "For now, no quiz is set for this section.";
-                return RedirectToAction("CourseMainPage", "Courses", new { id = GetCourseIdForSection(sectionId), error = true });
+                //return RedirectToAction("CourseMainPage", "Courses", new { id = GetCourseIdForSection(sectionId), error = true });
+                var sectionLevel = GetSectionLevel(sectionId);
+                switch (sectionLevel.ToLower())
+                {
+                    case "basic":
+                        return RedirectToAction("CourseMainPage", "Courses", new { id = GetCourseIdForSection(sectionId), error = true });
+                    case "-basic":
+                        return RedirectToAction("BasicMinusLearningPath", "Learning", new { id = GetCourseIdForSection(sectionId), totalScore = totalScore });
+                    case "medium":
+                        return RedirectToAction("MediumLearningPath", "Learning", new { id = GetCourseIdForSection(sectionId), totalScore = totalScore });
+                    case "medium+":
+                        return RedirectToAction("MediumPlusLearningPath", "Learning", new { id = GetCourseIdForSection(sectionId), totalScore = totalScore });
+                    case "advanced":
+                        return RedirectToAction("AdvancedLearningPath", "Learning", new { id = GetCourseIdForSection(sectionId), totalScore = totalScore });
+                    default:
+                        return RedirectToAction("CourseMainPage", "Courses", new { id = GetCourseIdForSection(sectionId), error = true });
+                }
             }
 
             var viewModel = new QuizSubmissionViewModel
@@ -558,6 +669,17 @@ namespace CodeAcademy.Controllers
             {
                 return RedirectToAction("Error");
             }
+
+            // Delete existing student answers for the current quiz and student
+            var existingStudentAnswers = await _context.StudentAnswers
+                .Where(sa => sa.QuizId == QuizId && sa.StudentId == student.UserId)
+                .ToListAsync();
+
+            if (existingStudentAnswers.Any())
+            {
+                _context.StudentAnswers.RemoveRange(existingStudentAnswers);
+                await _context.SaveChangesAsync();
+            } 
 
             List<StudentAnswer> studentAnswers = new List<StudentAnswer>();
 
@@ -661,6 +783,12 @@ namespace CodeAcademy.Controllers
                     
 
             return RedirectToAction("CourseMainPage", "Courses", new { id = courseId });
+        }
+
+        private string GetSectionLevel(int sectionId)
+        {
+            var section = _context.CourseSections.FirstOrDefault(s => s.SectionId == sectionId);
+            return section?.SectionLevel ?? "unknown"; // Default to "unknown" or handle appropriately
         }
 
         private int GenerateStudentAnswerId()

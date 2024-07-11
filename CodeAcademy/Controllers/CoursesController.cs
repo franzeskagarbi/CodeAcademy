@@ -295,6 +295,7 @@ namespace CodeAcademy.Controllers
                 .Include(q => q.Questions) // Συμπερίληψη των ερωτήσεων που σχετίζονται με το quiz
                 .Where(q => sections.Select(s => s.SectionId).Contains(q.SectionId))
                 .ToListAsync();
+            var quizIds = sections.SelectMany(cs => cs.Quizzes.Select(q => q.QuizId)).ToList();
 
             var quizzesList = quizzes.AsEnumerable();
             // Εύρεση των ερωτήσεων που ανήκουν στα quiz
@@ -307,7 +308,7 @@ namespace CodeAcademy.Controllers
 
             // Find all student_answers related to these quizzes
             var studentAnswers = await _context.StudentAnswers
-            .Where(sa => quizzesList.Any(q => q.QuizId == sa.QuizId))
+            .Where(sa => quizIds.Contains((int)sa.QuizId))
             .ToListAsync();
 
             // Remove all student_answers

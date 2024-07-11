@@ -46,6 +46,7 @@ namespace CodeAcademy.Controllers
 
             ViewBag.CourseTitle = course.Title;
             ViewBag.CourseId = course.CourseId;
+            ViewBag.totalScore = totalScore;
 
             return View(viewName, sections);
         }
@@ -53,22 +54,26 @@ namespace CodeAcademy.Controllers
         // GET: Learning/MediumLearningPath
         public async Task<IActionResult> MediumLearningPath(int id, int totalScore)
         {
+            ViewBag.totalScore = totalScore;
             return await GetLearningPath(id, totalScore, "medium", "MediumLearningPath");
         }
         // GET: Learning/MediumPlusLearningPath
         public async Task<IActionResult> MediumPlusLearningPath(int id, int totalScore)
         {
+            ViewBag.totalScore = totalScore;
             return await GetLearningPath(id, totalScore, "medium+", "MediumPlusLearningPath");
         }
 
         // GET: Learning/AdvancedLearningPath
         public async Task<IActionResult> AdvancedLearningPath(int id, int totalScore)
         {
+            ViewBag.totalScore = totalScore;
             return await GetLearningPath(id, totalScore, "advanced", "AdvancedLearningPath");
         }
         // GET: Learning/AdvancedLearningPath
         public async Task<IActionResult> BasicMinusLearningPath(int id, int totalScore)
         {
+            ViewBag.totalScore = totalScore;
             return await GetLearningPath(id, totalScore, "-basic", "BasicMinusLearningPath");
         }
 
